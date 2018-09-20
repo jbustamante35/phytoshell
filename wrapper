@@ -28,152 +28,22 @@
 #       Julian Bustamante, Graduate Researcher (jbustamante@wisc.edu)
 #################################################################################
 
-# Determine verbosity level and re-configure arguments
-# Verbosity level originally set to $1, but will be 
-# removed and subsequent arguments moved down by -1
-verb=$1
-set -- "${@:2}"
+# Determine if arguments should be run from commandline [run from CyVerse]
+# or downloaded from config.json [run from OSG]
+if [[ $# -eq 0 ]]; then
+        echo "No arguments selected. Parsing arguments from config.json"
 
-case $verb in
-0)
-        vlvl=" "
-        ;;
+        str=$(configOSG.sh)
+        output=$( echo $str | cut -f 2 -d [ | cut -f 1 -d ] )
+        args=(${output//,/ })
 
-1)
-        vlvl="-V"
-        ;;
-*)
-        vlvl="-V"
-        ;;
-esac
+        runner ${args[@]}
+        # Return data to user's iRODS server
+        ticketParser.sh /loadingdock/output_ticket.list iput
 
-# Check input arguments
-printf "**************************************************************\n"
-printf "* Phytomorph Docker image shell designed in 09/2018          *\n"
-printf "**************************************************************\n"
-printf "* Input Arguments are:                                       *\n"
-printf "* Code folder: ${1}\n"
-printf "* Lang_o-a_app: ${2}\n"
-printf "* Data: ${3}\n"
-printf "**************************************************************\n"
+else
+        # Running commandline arguments [for CyVerse]
+        runner $@
 
-# Parse through key_value hash to get language_application
-lang=$(echo $2 | cut -f 1 -d _)
-ver=$(echo $2 | cut -f 2 -d _)
-app=$(echo $2 | cut -f 3 -d _)
+fi
 
-printf "**************************************************************\n"
-printf "* Results from parsed argument Lang_o-a_app                  *\n"
-printf "* Lang: ${lang} \n"
-printf "* Ver: ${ver} \n"
-printf "* App: ${app}\n"
-printf "**************************************************************\n\n"
-
-# Get original and user's code folder from iRODS
-ofldr="/iplant/home/nmiller/phytoMorph_public_deploy"
-afldr=$1
-printf "**************************************************************\n"
-printf "* Downloading original (phytomorph) codebase                 *\n"
-printf "* Source folder: ${ofldr} \n"
-startO=$SECONDS
-iget -r $vlvl $ofldr/matlab /codebase/o
-iget -r $vlvl $ofldr/r /codebase/o
-iget -r $vlvl $ofldr/python /codebase/o
-iget -r $vlvl $ofldr/octave /codebase/o
-iget -r $vlvl $ofldr/julia /codebase/o
-runO=$(($SECONDS-$startO))
-printf "**************************************************************\n"
-printf "* ${runO} seconds to download original codebase\n"
-printf "**************************************************************\n\n"
-
-printf "**************************************************************\n"
-printf "* Downloading alternate codebase                             *\n"
-printf "* Source folder: ${afldr} \n"
-startA=$SECONDS
-iget -r $vlvl $afldr/matlab /codebase/a
-iget -r $vlvl $afldr/r /codebase/a
-iget -r $vlvl $afldr/python /codebase/a
-iget -r $vlvl $afldr/octave /codebase/a
-iget -r $vlvl $afldr/julia /codebase/a
-runA=$(($SECONDS-$startA))
-printf "**************************************************************\n"
-printf "* ${runA} seconds to download alternate codebase\n"
-printf "**************************************************************\n"
-
-
-# Set codebase directory and configure language environment
-path=/codebase
-
-case $lang in
-m)
-        printf "**************************************************************\n"
-        printf "* MATLAB Codebase selected                                   *\n"
-        printf "**************************************************************\n"
-        cmd=$path/$ver/matlab/DEwrapper
-        chmod +x $cmd
-        export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64
-        export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults
-
-        ;;
-r)
-        printf "**************************************************************\n"
-        printf "* R Codebase selected                                        *\n"
-        printf "**************************************************************\n"
-        cmd="/yes/bin/Rscript $path/$ver/r/DEwrapper.R"
-        ;;
-p)
-        printf "**************************************************************\n"
-        printf "* Python Codebase selected                                   *\n"
-        printf "**************************************************************\n"
-        cmd="python $path/$ver/python/DEwrapper.py"
-        ;;
-
-o)
-        printf "**************************************************************\n"
-        printf "* Octave Codebase selected                                   *\n"
-        printf "**************************************************************\n"
-        cmd="octave $path/$ver/octave/DEwrapper.m"
-        export DISPLAY=0.0
-        ;;
-
-j)
-        printf "**************************************************************\n"
-        printf "* Julia Codebase selected                                    *\n"
-        printf "**************************************************************\n"
-        cmd="julia $path/$ver/julia/DEwrapper.jl"
-        ;;
-b)
-        printf "**************************************************************\n"
-        printf "* Debug mode selected                                        *\n"
-        printf "**************************************************************\n"
-        cmd=/bin/bash
-        ;;
-*)
-        echo "error: no command specified"
-        ;;
-esac
-
-# Reconfigure arguments and Run commands
-# Sets codebase directory ($1) to empty and sets application to $2
-printf "**************************************************************\n"
-echo -e "* Pre-arguments: ${@} \n"
-printf "**************************************************************\n"
-
-set -- "" $app "${@:3}"
-
-printf "**************************************************************\n"
-echo -e "* Post-arguments: ${@} \n"
-printf "**************************************************************\n"
-
-printf "**************************************************************\n"
-echo -e "* Running Command: ${cmd} ${@} \n"
-printf "**************************************************************\n"
-
-startC=$SECONDS
-$cmd $@
-runC=$(($SECONDS-$startC))
-
-printf "**************************************************************\n"
-echo -e "* Ending Command: ${cmd} ${@} \n"
-printf "* ${runC} seconds to run command\n"
-printf "**************************************************************\n"

@@ -101,18 +101,43 @@ RUN apt-get -qq install -y octave ;
 RUN rm -rf irods-icommands.deb mcr2017b.zip /mcr-install anaconda3.sh installRfromConda.sh ;
 
 # Add wrapper, config, and test scripts
-ADD eSFRdefaultColorReference.mat /usr/bin/
-ADD eSFRdefaultGrayReference.mat /usr/bin/
-ADD irods_environment.json /root/.irods/
-ADD wrapper /usr/bin/
-ADD langtest/ /usr/local/langtest
-RUN chmod +x /usr/bin/wrapper
-RUN mkdir -p /codebase/o
-RUN mkdir -p /codebase/a
+# Reading imaTest charts in MATLAB
+ADD eSFRdefaultColorReference.mat /usr/local/bin/
+ADD eSFRdefaultGrayReference.mat /usr/local/bin/
 
-# Unit tests
-RUN mkdir -p /sampleimages/maizeseedling/
+# Debugging scripts to test languages from /bin/bash
+ADD langtest/ /usr/local/langtest/
+
+# Default anonymous login for iRODS for configOSG.sh
+ADD irods_environment.json /root/.irods/
+
+# Parse lines of input_ticket.list for configOSG.sh
+ADD evalTicket.sh /usr/local/bin/
+ADD ticketParser.sh /usr/local/bin/
+
+# Extract arguments from config.json file for configOSG.sh
+ADD configOSG.sh /usr/local/bin/
+ADD parseConfig.sh /usr/local/bin/
+
+# Entrypoint for Docker image
+ADD runner /usr/local/bin/
+ADD wrapper /usr/local/bin/
+
+# Make shell scripts executable
+RUN chmod +x /usr/local/bin/evalTicket.sh
+RUN chmod +x /usr/local/bin/ticketParser.sh
+RUN chmod +x /usr/local/bin/parseConfig.sh
+RUN chmod +x /usr/local/bin/configOSG.sh
+RUN chmod +x /usr/local/bin/runner
+RUN chmod +x /usr/local/bin/wrapper
+
+# Create original and alternate codebases for configOSG.sh
+RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock/userdata/datain /loadingdock/userdata/dataout /loadingdock/codebase/o /loadingdock/codebase/a
+WORKDIR /loadingdock
 ADD {Plot_2435}{Experiment_80}{Planted_3-4-2018}{SeedSource_16B-7567-7}{SeedYear_2016}{Genotype_CML069}{Treatment_Control}{PictureDay_16}.nef /sampleimages/maizeseedling/
 
 # ENTRYPOINT
-ENTRYPOINT ["/usr/bin/wrapper"]
+ADD output_ticket.list /loadingdock
+ADD input_ticket.list /loadingdock
+ADD config.json /loadingdock
+ENTRYPOINT ["/usr/local/bin/wrapper"]
