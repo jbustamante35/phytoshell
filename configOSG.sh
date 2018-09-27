@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Init input file of arguments
-#parseConfig.sh "$(< /root/.irods/irods_environment.json)"
 
 printf "\n**************************************************************\n"
 printf "**************************************************************\n"
@@ -26,6 +25,7 @@ printf "*                                                            *\n"
 printf "**************************************************************\n"
 printf "**************************************************************\n\n"
 
-mv /loadingdock/config.json /root/.irods/irods_environment.json
-args=$(parseConfig.sh "$(< /root/.irods/irods_environment.json)")
+mkdir -p ~/.irods
+mv /loadingdock/config.json ~/.irods/irods_environment.json
+args=$(parseConfig.sh "$(< ~/.irods/irods_environment.json)")
 echo "[ $args ]"

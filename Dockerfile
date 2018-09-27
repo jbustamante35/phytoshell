@@ -97,6 +97,16 @@ RUN \
 # Install Octave
 RUN apt-get -qq install -y octave ;
 
+
+
+# X11 configurations for VNC and Octave 
+#ENV DISPLAY :0
+#EXPOSE 5900
+#RUN apt-get -qq install -y \
+#    xvfb x11vnc fluxbox ;
+
+
+
 # Delete installation files
 RUN rm -rf irods-icommands.deb mcr2017b.zip /mcr-install anaconda3.sh installRfromConda.sh ;
 
@@ -109,7 +119,7 @@ ADD eSFRdefaultGrayReference.mat /usr/local/bin/
 ADD langtest/ /usr/local/langtest/
 
 # Default anonymous login for iRODS for configOSG.sh
-ADD irods_environment.json /root/.irods/
+#ADD irods_environment.json ~/.irods/
 
 # Parse lines of input_ticket.list for configOSG.sh
 ADD evalTicket.sh /usr/local/bin/
@@ -121,7 +131,7 @@ ADD parseConfig.sh /usr/local/bin/
 
 # Entrypoint for Docker image
 ADD runner /usr/local/bin/
-ADD wrapper /usr/local/bin/
+ADD wrapper /usr/bin/
 
 # Make shell scripts executable
 RUN chmod +x /usr/local/bin/evalTicket.sh
@@ -129,15 +139,19 @@ RUN chmod +x /usr/local/bin/ticketParser.sh
 RUN chmod +x /usr/local/bin/parseConfig.sh
 RUN chmod +x /usr/local/bin/configOSG.sh
 RUN chmod +x /usr/local/bin/runner
-RUN chmod +x /usr/local/bin/wrapper
+RUN chmod +x /usr/bin/wrapper
 
 # Create original and alternate codebases for configOSG.sh
 RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock/userdata/datain /loadingdock/userdata/dataout /loadingdock/codebase/o /loadingdock/codebase/a
+
+ADD irods_environment.json /loadingdock/
+RUN chmod -R a+rwX /loadingdock
+
 WORKDIR /loadingdock
 ADD {Plot_2435}{Experiment_80}{Planted_3-4-2018}{SeedSource_16B-7567-7}{SeedYear_2016}{Genotype_CML069}{Treatment_Control}{PictureDay_16}.nef /sampleimages/maizeseedling/
 
 # ENTRYPOINT
-ADD output_ticket.list /loadingdock
-ADD input_ticket.list /loadingdock
-ADD config.json /loadingdock
-ENTRYPOINT ["/usr/local/bin/wrapper"]
+#ADD output_ticket.list /loadingdock
+#ADD input_ticket.list /loadingdock
+#ADD config.json /loadingdock
+ENTRYPOINT ["/usr/bin/wrapper"]

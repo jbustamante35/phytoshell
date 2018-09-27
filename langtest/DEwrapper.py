@@ -9,3 +9,5 @@ fout = open(fname, "w")
 text = "\n\n\nHELLOW PYTHON!!!\n\n\n"
 fout.write(text)
 fout.close()
+
+print('\n\n\nHELLOW PYTHON\n\n\n')
