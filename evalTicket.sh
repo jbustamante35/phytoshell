@@ -4,7 +4,7 @@
 # target: directory for extracting/exporting data
 # command: 'iget' to extract data (iget) 'iput' to export data (iput)
 
-# Parse iRODS input file to get ticket and data 
+# Parse iRODS input file to get ticket and data
 var=$2
 var=$(echo ${var:0:1})
 type=$1
@@ -34,4 +34,3 @@ case $var in
         ;;
     esac
 esac
-

@@ -121,6 +121,9 @@ ADD langtest/ /usr/local/langtest/
 # Default anonymous login for iRODS for configOSG.sh
 #ADD irods_environment.json ~/.irods/
 
+# script containing some common functions.
+ADD utils.sh /usr/local/bin/
+
 # Parse lines of input_ticket.list for configOSG.sh
 ADD evalTicket.sh /usr/local/bin/
 ADD ticketParser.sh /usr/local/bin/

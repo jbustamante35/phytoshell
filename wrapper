@@ -28,6 +28,8 @@
 #       Julian Bustamante, Graduate Researcher (jbustamante@wisc.edu)
 #################################################################################
 
+. /usr/local/bin/utils.sh
+
 # Show docker image version
 working_directory=$(pwd)
 printf "**************************************************************\n"
@@ -48,12 +50,12 @@ if [[ $# -eq 0 ]]; then
 
         runner ${args[@]}
         # Return data to user's iRODS server
-        ticketParser.sh /loadingdock/output_ticket.list iput
+        ticketParser.sh output_ticket.list iput || err_exit "unable to parse the output ticket list"
 
 else
         # Create iRODS directory running commandline arguments [for CyVerse]
-        mkdir -p ~/.irods
-        mv /loadingdock/irods_environment.json ~/.irods/
+        mkdir -p ~/.irods || err_exit "unable to create ~/.irods"
+        cp -p config.json ~/.irods/ || err_exit "unable to copy config.json to ~/.irods"
         runner $@
 
 fi
