@@ -1,12 +1,12 @@
 #!/bin/bash
 #################################################################################
 # This is the wrapper script that serves as the ENTRYPOINT for the phytoshell
-# Docker image. It parses through command line arguments to determine the 
-# codebase and application to run, and which programming language with which 
-# the application. 
-# 
+# Docker image. It parses through command line arguments to determine the
+# codebase and application to run, and which programming language with which
+# the application.
+#
 # Usage:
-#       docker run -it phytoshell [verbosity] [codebase] [language_version_application] [additional arguments] 
+#       docker run -it phytoshell [verbosity] [codebase] [language_version_application] [additional arguments]
 #
 # Input:
 #       verbosity: output for iRODS command to download codebase (0-none, 1-strong)
@@ -17,14 +17,14 @@
 #               version -> o:original codebase (ours), a:alternate codebase (user-defined)
 #               application -> name of application to run
 #       additional arguments: any command line arguments to pass into the application
-# 
+#
 # Pipeline Overview:
 #       1) Check input arguments for language, codebase, and application
 #       2) Set codebase directory  and configure language environment
 #       3) Re-configure argument order and Run command
 #
 # Authors
-#       Nathan Miller, Senior Scientist (ndmill@gmail.com) 
+#       Nathan Miller, Senior Scientist (ndmill@gmail.com)
 #       Julian Bustamante, Graduate Researcher (jbustamante@wisc.edu)
 #################################################################################
 
@@ -57,4 +57,3 @@ else
         runner $@
 
 fi
-
