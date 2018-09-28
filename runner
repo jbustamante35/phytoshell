@@ -69,7 +69,7 @@ printf "**************************************************************\n\n\n"
 # Get original and user's code folder from iRODS
 ofldr="/iplant/home/nmiller/phytoMorph_public_deploy"
 afldr=$1
-code_target_folder=codebase
+code_target_folder=$(pwd)/codebase
 printf "**************************************************************\n"
 printf "* Downloading original (phytomorph) codebase                 *\n"
 printf "* Source folder: ${ofldr} \n"
