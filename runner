@@ -74,11 +74,11 @@ printf "**************************************************************\n"
 printf "* Downloading original (phytomorph) codebase                 *\n"
 printf "* Source folder: ${ofldr} \n"
 startO=$SECONDS
-iget -r $vlvl $ofldr/matlab $code_target_folder/o
-iget -r $vlvl $ofldr/r $code_target_folder/o
-iget -r $vlvl $ofldr/python $code_target_folder/o
-iget -r $vlvl $ofldr/octave $code_target_folder/o
-iget -r $vlvl $ofldr/julia $code_target_folder/o
+iget -rf $vlvl $ofldr/matlab $code_target_folder/o
+iget -rf $vlvl $ofldr/r $code_target_folder/o
+iget -rf $vlvl $ofldr/python $code_target_folder/o
+iget -rf $vlvl $ofldr/octave $code_target_folder/o
+iget -rf $vlvl $ofldr/julia $code_target_folder/o
 runO=$(($SECONDS-$startO))
 printf "*------------------------------------------------------------*\n"
 printf "* ${runO} seconds to download original codebase\n"
@@ -92,11 +92,11 @@ na)
     ;;
 
 *)
-    iget -r $vlvl $afldr/matlab $code_target_folder/a
-    iget -r $vlvl $afldr/r $code_target_folder/a
-    iget -r $vlvl $afldr/python $code_target_folder/a
-    iget -r $vlvl $afldr/octave $code_target_folder/a
-    iget -r $vlvl $afldr/julia $code_target_folder/a
+    iget -rf $vlvl $afldr/matlab $code_target_folder/a
+    iget -rf $vlvl $afldr/r $code_target_folder/a
+    iget -rf $vlvl $afldr/python $code_target_folder/a
+    iget -rf $vlvl $afldr/octave $code_target_folder/a
+    iget -rf $vlvl $afldr/julia $code_target_folder/a
     ;;
 esac
 runA=$(($SECONDS-$startA))
