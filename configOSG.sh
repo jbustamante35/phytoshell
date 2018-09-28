@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 . /usr/local/bin/utils.sh
 
 # Init input file of arguments

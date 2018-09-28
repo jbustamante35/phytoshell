@@ -28,6 +28,8 @@
 #       Julian Bustamante, Graduate Researcher (jbustamante@wisc.edu)
 #################################################################################
 
+set -e
+
 . /usr/local/bin/utils.sh
 
 # Show docker image version
@@ -38,6 +40,10 @@ printf "*                  Designed 09/25/2018                       *\n"
 printf "*         Authors: Nathan Miller, Julian Bustamante          *\n"
 printf "*           Working Directory: ${working_directory}                  *\n"
 printf "**************************************************************\n"
+
+# Create some scratch subdirectories.
+mkdir -p userdata/datain userdata/dataout || err_exit "unable to create user data subdirectories"
+mkdir -p codebase/o codebase/a || err_exit "unable to create codebase subdirectories"
 
 # Determine if arguments should be run from commandline [run from CyVerse]
 # or downloaded from config.json [run from OSG]

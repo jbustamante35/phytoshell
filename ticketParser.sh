@@ -6,16 +6,16 @@ icmd=$2
 case $icmd in
 iget)
 
-    source=/loadingdock/userdata/datain/
+    source=userdata/datain/
     ;;
 
 iput)
-    source=/loadingdock/userdata/dataout/
+    source=userdata/dataout/
     ;;
 
 *)
     echo "error with icommand, ..."
-    source=/loadingdock/userdata/dataout/
+    source=userdata/dataout/
     ;;
 
 esac
