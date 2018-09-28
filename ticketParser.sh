@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 fin=$1
 icmd=$2
 

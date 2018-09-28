@@ -28,6 +28,8 @@
 #       Julian Bustamante, Graduate Researcher (jbustamante@wisc.edu)
 #################################################################################
 
+set -e
+
 verb=$1
 set -- "${@:2}"
 

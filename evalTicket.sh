@@ -4,6 +4,8 @@
 # target: directory for extracting/exporting data
 # command: 'iget' to extract data (iget) 'iput' to export data (iput)
 
+set -e
+
 # Parse iRODS input file to get ticket and data
 var=$2
 var=$(echo ${var:0:1})
