@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -e
+
+. /usr/local/bin/utils.sh
+
 # Init input file of arguments
 
 printf "\n**************************************************************\n"
@@ -12,9 +16,8 @@ printf "**************************************************************\n"
 printf "**************************************************************\n"
 printf "**************************************************************\n"
 # Get user data from iRODS by parsing through tickets,directories file
-# If 
-tickets=/loadingdock/input_ticket.list
-ticketParser.sh $tickets
+tickets=input_ticket.list
+ticketParser.sh $tickets || err_exit "unable to parse input ticket list"
 
 printf "**************************************************************\n"
 printf "**************************************************************\n"
@@ -25,7 +28,7 @@ printf "*                                                            *\n"
 printf "**************************************************************\n"
 printf "**************************************************************\n\n"
 
-mkdir -p ~/.irods
-mv /loadingdock/config.json ~/.irods/irods_environment.json
+mkdir -p ~/.irods || err_exit "unable to create ~/.irods"
+cp -p config.json ~/.irods/irods_environment.json || err_exit "unable to copy config file to ~/.irods"
 args=$(parseConfig.sh "$(< ~/.irods/irods_environment.json)")
 echo "[ $args ]"

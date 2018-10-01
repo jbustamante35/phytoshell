@@ -1,12 +1,12 @@
 #!/bin/bash
 #################################################################################
 # This is the wrapper script that serves as the ENTRYPOINT for the phytoshell
-# Docker image. It parses through command line arguments to determine the 
-# codebase and application to run, and which programming language with which 
-# the application. 
-# 
+# Docker image. It parses through command line arguments to determine the
+# codebase and application to run, and which programming language with which
+# the application.
+#
 # Usage:
-#       docker run -it phytoshell [verbosity] [codebase] [language_version_application] [additional arguments] 
+#       docker run -it phytoshell [verbosity] [codebase] [language_version_application] [additional arguments]
 #
 # Input:
 #       verbosity: output for iRODS command to download codebase (0-none, 1-strong)
@@ -17,16 +17,20 @@
 #               version -> o:original codebase (ours), a:alternate codebase (user-defined)
 #               application -> name of application to run
 #       additional arguments: any command line arguments to pass into the application
-# 
+#
 # Pipeline Overview:
 #       1) Check input arguments for language, codebase, and application
 #       2) Set codebase directory  and configure language environment
 #       3) Re-configure argument order and Run command
 #
 # Authors
-#       Nathan Miller, Senior Scientist (ndmill@gmail.com) 
+#       Nathan Miller, Senior Scientist (ndmill@gmail.com)
 #       Julian Bustamante, Graduate Researcher (jbustamante@wisc.edu)
 #################################################################################
+
+set -e
+
+. /usr/local/bin/utils.sh
 
 # Show docker image version
 working_directory=$(pwd)
@@ -36,6 +40,10 @@ printf "*                  Designed 09/25/2018                       *\n"
 printf "*         Authors: Nathan Miller, Julian Bustamante          *\n"
 printf "*           Working Directory: ${working_directory}                  *\n"
 printf "**************************************************************\n"
+
+# Create some scratch subdirectories.
+mkdir -p userdata/datain userdata/dataout || err_exit "unable to create user data subdirectories"
+mkdir -p codebase/o codebase/a || err_exit "unable to create codebase subdirectories"
 
 # Determine if arguments should be run from commandline [run from CyVerse]
 # or downloaded from config.json [run from OSG]
@@ -48,13 +56,12 @@ if [[ $# -eq 0 ]]; then
 
         runner ${args[@]}
         # Return data to user's iRODS server
-        ticketParser.sh /loadingdock/output_ticket.list iput
+        ticketParser.sh output_ticket.list iput || err_exit "unable to parse the output ticket list"
 
 else
         # Create iRODS directory running commandline arguments [for CyVerse]
-        mkdir -p ~/.irods
-        mv /loadingdock/irods_environment.json ~/.irods/
+        mkdir -p ~/.irods || err_exit "unable to create ~/.irods"
+        cp -p config.json ~/.irods/ || err_exit "unable to copy config.json to ~/.irods"
         runner $@
 
 fi
-
