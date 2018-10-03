@@ -132,17 +132,20 @@ ADD ticketParser.sh /usr/local/bin/
 ADD configOSG.sh /usr/local/bin/
 ADD parseConfig.sh /usr/local/bin/
 
+# A script to upload files to the data store using iRODS tickets.
+ADD upload-files /usr/local/bin/
+
 # Entrypoint for Docker image
 ADD runner /usr/local/bin/
 ADD wrapper /usr/bin/
 
-# Make shell scripts executable
-RUN chmod +x /usr/local/bin/evalTicket.sh
-RUN chmod +x /usr/local/bin/ticketParser.sh
-RUN chmod +x /usr/local/bin/parseConfig.sh
-RUN chmod +x /usr/local/bin/configOSG.sh
-RUN chmod +x /usr/local/bin/runner
-RUN chmod +x /usr/bin/wrapper
+# Make scripts executable
+RUN chmod +x /usr/local/bin/evalTicket.sh \
+    /usr/local/bin/ticketParser.sh \
+    /usr/local/bin/parseConfig.sh \
+    /usr/local/bin/configOSG.sh \
+    /usr/local/bin/runner \
+    /usr/bin/wrapper
 
 # Create original and alternate codebases for configOSG.sh
 RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock
