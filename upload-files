@@ -21,11 +21,12 @@ def parse_args():
 
 # Builds the path to an uploaded file.
 def build_upload_path(src, dest):
-    return os.path.join(dest, os.path.basenmae(src))
+    return os.path.join(dest, os.path.basename(src))
 
 # Grants ownership on an iRODS path to a user.
-def grant_ownership(path, user):
-    rc = subprocess.call(["ichmod", "-r", "own", user, path])
+def grant_ownership(path, user, recursive=False):
+    cmd = ["ichmod", "-r", "own", user, path] if recursive else ["ichmod", "own", user, path]
+    rc = subprocess.call(cmd)
     if rc != 0:
         raise Exception("unable to grant ownership permissions for {0} to {1}".format(path, user))
 
@@ -39,8 +40,8 @@ def revoke_permissions(path, user):
 def fix_permissions(src, dest, owner, uploader):
     if owner != uploader:
         path = build_upload_path(src, dest)
-        grant_ownership(path, owner)
-        revoke_privileges(path, uploader)
+        grant_ownership(path, owner, recursive=True)
+        revoke_permissions(path, uploader)
 
 # Creates a directory in the data store using a ticket. We can't use imkdir here because imkdir doesn't
 # support tickets. We also can't check for errors because the contents of the subdirectory can't be uploaded
@@ -78,7 +79,7 @@ def upload_directory(src, dest, ticket, owner, uploader):
 
     # Upload the contents and fix the permissions.
     upload_contents(src, subdir)
-    fix_permissions(src, dest, ticket, owner, uploader)
+    fix_permissions(src, dest, owner, uploader)
 
 # Uploads files and directories to the data store.
 def do_upload(sources, dest, ticket, owner, uploader):
