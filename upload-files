@@ -47,7 +47,8 @@ def fix_permissions(src, dest, owner, uploader):
 # support tickets. We also can't check for errors because the contents of the subdirectory can't be uploaded
 # and will result in a non-zero exit status.
 def create_directory(src, dest, ticket, owner, uploader):
-    subprocess.call(["iput", "-rt", ticket, src, dest])
+    with open("/dev/null", "w") as f:
+        subprocess.call(["iput", "-rt", ticket, src, dest], stdout=f, stderr=f)
 
 # Recursively uploads a file or directory to the data store.
 def upload_recursive(src, dest):
