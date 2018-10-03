@@ -31,17 +31,18 @@ def grant_ownership(path, user, recursive=False):
         raise Exception("unable to grant ownership permissions for {0} to {1}".format(path, user))
 
 # Revokes permissions on an iRODS path from a user.
-def revoke_permissions(path, user):
-    rc = subprocess.call(["ichmod", "-r", "null", user, path])
+def revoke_permissions(path, user, recursive=False):
+    cmd = ["ichmod", "-r", "null", user, path] if recursive else ["ichmod", "null", user, path]
+    rc = subprocess.call(cmd)
     if rc != 0:
         raise Exception("unable to revoke permissions for {0} from {1}").format(path, user)
 
 # Fixes permissions on a path in the data store.
-def fix_permissions(src, dest, owner, uploader):
+def fix_permissions(src, dest, owner, uploader, recursive=False):
     if owner != uploader:
         path = build_upload_path(src, dest)
-        grant_ownership(path, owner, recursive=True)
-        revoke_permissions(path, uploader)
+        grant_ownership(path, owner, recursive=recursive)
+        revoke_permissions(path, uploader, recursive=recursive)
 
 # Creates a directory in the data store using a ticket. We can't use imkdir here because imkdir doesn't
 # support tickets. We also can't check for errors because the contents of the subdirectory can't be uploaded
@@ -65,7 +66,7 @@ def upload_contents(src, dest):
 def upload_file(src, dest, ticket, owner, uploader):
     rc = subprocess.call(["iput", "-t", ticket, src, dest])
     if rc != 0:
-        raise Exception("unable to uploade {0} to {1}".format("src, dest"))
+        raise Exception("unable to upload {0} to {1}".format(src, dest))
     fix_permissions(src, dest, owner, uploader)
 
 # Uploads a directory to the data store.
@@ -80,7 +81,7 @@ def upload_directory(src, dest, ticket, owner, uploader):
 
     # Upload the contents and fix the permissions.
     upload_contents(src, subdir)
-    fix_permissions(src, dest, owner, uploader)
+    fix_permissions(src, dest, owner, uploader, recursive=True)
 
 # Uploads files and directories to the data store.
 def do_upload(sources, dest, ticket, owner, uploader):
@@ -91,7 +92,7 @@ def do_upload(sources, dest, ticket, owner, uploader):
         elif stat.S_ISREG(mode):
             upload_file(src, dest, ticket, owner, uploader)
         else:
-            print >> sys.sdterr, "not uploading {0}: unsupported file type".format(src)
+            print >> sys.stderr, "not uploading {0}: unsupported file type".format(src)
 
 if __name__ == "__main__":
     args = parse_args()
