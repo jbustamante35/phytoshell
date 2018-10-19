@@ -105,10 +105,12 @@ RUN apt-get -qq install -y octave ;
 #RUN apt-get -qq install -y \
 #    xvfb x11vnc fluxbox ;
 
-
-
 # Delete installation files
 RUN rm -rf irods-icommands.deb mcr2017b.zip /mcr-install anaconda3.sh installRfromConda.sh ;
+
+# Install some Python dependencies
+RUN apt-get install -y python-pip python-dev build-essential && \
+    pip install requests
 
 # Add wrapper, config, and test scripts
 # Reading imaTest charts in MATLAB
@@ -118,36 +120,24 @@ ADD eSFRdefaultGrayReference.mat /usr/local/bin/
 # Debugging scripts to test languages from /bin/bash
 ADD langtest/ /usr/local/langtest/
 
-# Default anonymous login for iRODS for configOSG.sh
-#ADD irods_environment.json ~/.irods/
-
-# script containing some common functions.
-ADD utils.sh /usr/local/bin/
-
-# Parse lines of input_ticket.list for configOSG.sh
-ADD evalTicket.sh /usr/local/bin/
-ADD ticketParser.sh /usr/local/bin/
-
-# Extract arguments from config.json file for configOSG.sh
-ADD configOSG.sh /usr/local/bin/
-ADD parseConfig.sh /usr/local/bin/
+# A script to upload files to the data store using iRODS tickets.
+ADD upload-files /usr/local/bin/
 
 # Entrypoint for Docker image
 ADD runner /usr/local/bin/
 ADD wrapper /usr/bin/
 
-# Make shell scripts executable
-RUN chmod +x /usr/local/bin/evalTicket.sh
-RUN chmod +x /usr/local/bin/ticketParser.sh
-RUN chmod +x /usr/local/bin/parseConfig.sh
-RUN chmod +x /usr/local/bin/configOSG.sh
-RUN chmod +x /usr/local/bin/runner
-RUN chmod +x /usr/bin/wrapper
+# Make scripts executable
+RUN chmod +x /usr/local/bin/runner \
+    /usr/bin/wrapper
 
-# Create original and alternate codebases for configOSG.sh
+# Create original and alternate codebases
 RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock
 WORKDIR /loadingdock
 ADD {Plot_2435}{Experiment_80}{Planted_3-4-2018}{SeedSource_16B-7567-7}{SeedYear_2016}{Genotype_CML069}{Treatment_Control}{PictureDay_16}.nef /sampleimages/maizeseedling/
+
+# Add the default iRODS environment file.
+ADD irods_environment.json /root/.irods/irods_environment.json
 
 # ENTRYPOINT
 ENTRYPOINT ["/usr/bin/wrapper"]
