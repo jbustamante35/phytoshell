@@ -121,9 +121,10 @@ def download_file(ticket, src):
 
 # Download a set of files referenced in a ticket list file from iRODS.
 def download_files(ticket_list_path):
-    with TicketListReader(ticket_list_path) as tlr:
-        for ticket, src in tlr:
-            download_file(ticket, src)
+    if os.path.isfile(ticket_list_path):
+        with TicketListReader(ticket_list_path) as tlr:
+            for ticket, src in tlr:
+                download_file(ticket, src)
 
 # Upload a set of files to the directories referenced in a ticket list file to iRODS.
 def upload_files(ticket_list_path, irods_user, owner, files):
