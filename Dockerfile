@@ -59,15 +59,16 @@ RUN apt-get -qq update -y && apt-get -qq upgrade -y
 
 # Update packages and install basic utilities and iRODS dependencies
 RUN \
-	apt-get -qq install -y \
-	apt-utils bzip2 unzip wget xorg tzdata curl \
+    apt-get -qq install -y \
+    apt-utils bzip2 unzip wget xorg tzdata curl \
     libnspr4 libnss3 libnss3-dev libnss3-tools libjpeg62 libasound2 \
-	libfuse2 libssl1.0.0 libgconf-2-4 ;
+    libfuse2 libssl1.0.0 libgconf-2-4 ;
 
-# Install iRODS commands
+# Install iRODS commands [ downgrade 4.1.11 to 4.1.09 (10/19/18) ]
 RUN \
-	curl ftp://ftp.renci.org/pub/irods/releases/4.1.11/ubuntu14/irods-icommands-4.1.11-ubuntu14-x86_64.deb -o irods-icommands.deb ; \
-	dpkg -i irods-icommands.deb ;
+    #curl ftp://ftp.renci.org/pub/irods/releases/4.1.11/ubuntu14/irods-icommands-4.1.11-ubuntu14-x86_64.deb -o irods-icommands.deb ; \
+    curl ftp://ftp.renci.org/pub/irods/releases/4.1.9/ubuntu14/irods-icommands-4.1.9-ubuntu14-x86_64.deb -o irods-icommands.deb ; \
+    dpkg -i irods-icommands.deb ;
 
 # Install MATLAB 2017b MCR
 RUN \
@@ -78,34 +79,59 @@ RUN \
 
 # Install anaconda to run python2.7/3.7 with dependencies
 RUN \
-	curl https://repo.anaconda.com/archive/Anaconda3-5.2.0-Linux-x86_64.sh -o anaconda3.sh && \ 
+    curl https://repo.anaconda.com/archive/Anaconda3-5.2.0-Linux-x86_64.sh -o anaconda3.sh && \ 
     yes "yes" | bash anaconda3.sh && \
-	bash ~/.bashrc ;
+    bash ~/.bashrc ;
 
 # Install R from Anaconda
 ADD installRfromConda.sh /
 RUN \
-	chmod +x installRfromConda.sh && \
-        ./installRfromConda.sh ;
+    chmod +x installRfromConda.sh && \
+    ./installRfromConda.sh ;
 
 # Install Julia
 RUN \
-        curl https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.0-linux-x86_64.tar.gz -o julia.tar.gz ; \
-        tar -xzf julia.tar.gz -C /usr/local/ ; \
-        ln -s /usr/local/julia-1.0.0/bin/julia /usr/local/bin/julia ;
+    curl https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.0-linux-x86_64.tar.gz -o julia.tar.gz ; \
+    tar -xzf julia.tar.gz -C /usr/local/ ; \
+    ln -s /usr/local/julia-1.0.0/bin/julia /usr/local/bin/julia ;
 
 # Install Octave
 RUN apt-get -qq install -y octave ;
 
+# Set-up for X11 port-forwarding [ and a few simple tools for debug mode ]
+# Set display :0 and expose port 22
+# Install X11 utilities
+# Send config files to configure sshd 
+RUN \                                                                                               
+    apt-get update -y && apt-get upgrade -y ; \                                                     
+    apt-get -qq install -y \                                                                        
+    python-pip python3-pip \                                                                        
+    xvfb python3-pytest x11vnc git firefox ; \                                                      
+    pip install --upgrade pip ;                                                                     
 
+ENV DISPLAY :0                                                                                      
+EXPOSE 22                                                                                           
+                                                                                                    
+RUN \                                                                                               
+    mkdir ~/.vnc ; \                                                                                
+    x11vnc -storepasswd plant$ ~/.vnc/passwd ; \                                                    
+    apt-get -qq install -y \                                                                        
+    xutils x11-utils x11-common x11-session-utils x11-apps \                                        
+    libx11-6 dbus-x11 \                                                                             
+    openssh-server ssh openssh-known-hosts \                                                        
+    locate mlocate less vim ;     
 
-# X11 configurations for VNC and Octave 
+# Old method
+#RUN \
+#    mkdir -p ~/.vnc ; \
+#    apt-get -qq install -y \
+#    xutils x11-utils x11-common x11-session-utils x11-apps \
+#    libx11-6 dbus-x11 \
+#    openssh-server ssh openssh-known-hosts \
+#    locate mlocate less vim ;
 #ENV DISPLAY :0
-#EXPOSE 5900
-#RUN apt-get -qq install -y \
-#    xvfb x11vnc fluxbox ;
-
-
+#EXPOSE 22
+ADD sshd_config.x11     /etc/ssh/
 
 # Delete installation files
 RUN rm -rf irods-icommands.deb mcr2017b.zip /mcr-install anaconda3.sh installRfromConda.sh ;
@@ -117,9 +143,6 @@ ADD eSFRdefaultGrayReference.mat /usr/local/bin/
 
 # Debugging scripts to test languages from /bin/bash
 ADD langtest/ /usr/local/langtest/
-
-# Default anonymous login for iRODS for configOSG.sh
-#ADD irods_environment.json ~/.irods/
 
 # Parse lines of input_ticket.list for configOSG.sh
 ADD evalTicket.sh /usr/local/bin/
@@ -134,12 +157,13 @@ ADD runner /usr/local/bin/
 ADD wrapper /usr/bin/
 
 # Make shell scripts executable
-RUN chmod +x /usr/local/bin/evalTicket.sh
-RUN chmod +x /usr/local/bin/ticketParser.sh
-RUN chmod +x /usr/local/bin/parseConfig.sh
-RUN chmod +x /usr/local/bin/configOSG.sh
-RUN chmod +x /usr/local/bin/runner
-RUN chmod +x /usr/bin/wrapper
+RUN chmod +x \
+    /usr/local/bin/evalTicket.sh \
+    /usr/local/bin/ticketParser.sh \
+    /usr/local/bin/parseConfig.sh \
+    /usr/local/bin/configOSG.sh \
+    /usr/local/bin/runner \
+    /usr/bin/wrapper ;
 
 # Create original and alternate codebases for configOSG.sh
 RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock/userdata/datain /loadingdock/userdata/dataout /loadingdock/codebase/o /loadingdock/codebase/a
@@ -150,8 +174,13 @@ RUN chmod -R a+rwX /loadingdock
 WORKDIR /loadingdock
 ADD {Plot_2435}{Experiment_80}{Planted_3-4-2018}{SeedSource_16B-7567-7}{SeedYear_2016}{Genotype_CML069}{Treatment_Control}{PictureDay_16}.nef /sampleimages/maizeseedling/
 
-# ENTRYPOINT
+# Additional Debug files 
+#ADD irods_environment.json ~/.irods/
 #ADD output_ticket.list /loadingdock
 #ADD input_ticket.list /loadingdock
 #ADD config.json /loadingdock
+
+# ENTRYPOINT
 ENTRYPOINT ["/usr/bin/wrapper"]
+
+

@@ -1,33 +1,22 @@
 #!/bin/bash
 #################################################################################
-# This is the wrapper script that serves as the ENTRYPOINT for the phytoshell
-# Docker image. It parses through command line arguments to determine the 
-# codebase and application to run, and which programming language with which 
-# the application. 
-# 
-# Usage:
-#       docker run -it phytoshell [verbosity] [codebase] [language_version_application] [additional arguments] 
+# This is the runner script called by the wrapper script that parses through
+# command line arguments to determine how to run the application. The wrapper
+# script determines whether to run the application through CyVerse or the
+# Open Science Grid,
 #
-# Input:
-#       verbosity: output for iRODS command to download codebase (0-none, 1-strong)
-#       codebase: CyVerse path to directory containing code and libraries for the application
-#                 [our codebase is /iplant/home/nmiller/phytoMorph_public_deploy]
-#       language_version_application: argument must be in this format (delimiter _)
-#               language -> m:matlab, r:R, p:python, o:octave, j:julia, b:debug_mode
-#               version -> o:original codebase (ours), a:alternate codebase (user-defined)
-#               application -> name of application to run
-#       additional arguments: any command line arguments to pass into the application
-# 
 # Pipeline Overview:
 #       1) Check input arguments for language, codebase, and application
 #       2) Set codebase directory  and configure language environment
 #       3) Re-configure argument order and Run command
 #
 # Authors
-#       Nathan Miller, Senior Scientist (ndmill@gmail.com) 
+#       Nathan Miller, Senior Scientist (ndmill@gmail.com)
 #       Julian Bustamante, Graduate Researcher (jbustamante@wisc.edu)
-#################################################################################
+###############################################################################
 
+# Determine verbosity level and then remove it from the arguments
+# Any non-zero input defaults to strong verbosity
 verb=$1
 set -- "${@:2}"
 
@@ -88,7 +77,6 @@ startA=$SECONDS
 case $afldr in
 na)
     ;;
-
 *)
     iget -r $vlvl $afldr/matlab $code_target_folder/a
     iget -r $vlvl $afldr/r $code_target_folder/a
@@ -107,63 +95,86 @@ printf "**************************************************************\n\n\n"
 
 case $lang in
 m)
-        selection="MATLAB"
-        cmd=$code_target_folder/$ver/matlab/DEwrapper
-        chmod +x $cmd
-        export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64
-        export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults
-        ;;
+    selection="MATLAB"
+    cmd=$code_target_folder/$ver/matlab/DEwrapper
+    chmod +x $cmd
+    export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64
+    export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults
+    ;;
+
 r)
-        selection="R"
-        cmd="/yes/bin/Rscript $code_target_folder/$ver/r/DEwrapper.R"
-        ;;
+    selection="R"
+    cmd="/yes/bin/Rscript $code_target_folder/$ver/r/DEwrapper.R"
+    ;;
+
 p)
-        selection="Python"
-        cmd="python $code_target_folder/$ver/python/DEwrapper.py"
-        ;;
+    selection="Python"
+    cmd="python $code_target_folder/$ver/python/DEwrapper.py"
+    ;;
+
 p2)
-        selection="Python2"
-        cmd="python2 $code_target_folder/$ver/python/DEwrapper.py"
-        ;;
+    selection="Python2"
+    cmd="python2 $code_target_folder/$ver/python/DEwrapper.py"
+    ;;
 
 p3)
 
-        selection="Python3"
-        cmd="python3 $code_target_folder/$ver/python/DEwrapper.py"
-        ;;
+    selection="Python3"
+    cmd="python3 $code_target_folder/$ver/python/DEwrapper.py"
+    ;;
 
 o)
-        selection="Octave"
-        cmd="octave -W $code_target_folder/$ver/octave/DEwrapper.m"
+    selection="Octave"
+    cmd="octave -W $code_target_folder/$ver/octave/DEwrapper.m"
 
-        #fin=$code_target_folder/$ver/octave/DEwrapper.m
-        #run="octave --eval \"run('$fin')\""
-        #cmd="eval $run"
+    #fin=$code_target_folder/$ver/octave/DEwrapper.m
+    #run="octave --eval \"run('$fin')\""
+    #cmd="eval $run"
 
-        #echo "DISPLAY=$(echo $DISPLAY)"
-        #echo "Setting DISPLAY to $disp"
-        #disp=localhost:0
-        #export DISPLAY=$disp
-        #echo "DISPLAY=$(echo $DISPLAY)"
+    #echo "DISPLAY=$(echo $DISPLAY)"
+    #echo "Setting DISPLAY to $disp"
+    #disp=localhost:0
+    #export DISPLAY=$disp
+    #echo "DISPLAY=$(echo $DISPLAY)"
 
-        #echo "Initiating Xvfb..."
-        #Xvfb :0 -screen 0 800x60x16 &
-        #x11vnc -display :0 -N
+    #echo "Initiating Xvfb..."
+    #Xvfb :0 -screen 0 800x60x16 &
+    #x11vnc -display :0 -N
 
-        ;;
+    ;;
 
 j)
-        selection="Julia"
-        cmd="julia $code_target_folder/$ver/julia/DEwrapper.jl"
-        ;;
+    selection="Julia"
+    cmd="julia $code_target_folder/$ver/julia/DEwrapper.jl"
+    ;;
+
+mi)
+    selection="Interactive MATLAB GUI"
+    cmd="$code_target_folder/$ver/matlab/iPlant_ver0"
+    cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+    mv /etc/ssh/sshd_config.x11 /etc/sshd/sshd_config
+    passwd --stdin plants
+    service ssh restart
+
+    cd /usr/local/mcr/v93/sys/os/glnxa64
+    mv libstdc++.so.6 libstdc++.so.6.bak
+    cd $cmd
+    chmod +x $cmd
+
+    export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+    export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults
+    ;;
+
 b)
-        selection="Debug Mode"
-        cmd=/bin/bash
-        ;;
+    selection="Debug Mode"
+    cmd=/bin/bash
+    ;;
+
 *)
-        echo "error: no command specified"
-        selection="NO LANGUAGE SELECTED"
-        ;;
+    echo "error: no command specified"
+    selection="NO LANGUAGE SELECTED"
+    ;;
+
 esac
 
 printf "**************************************************************\n"
@@ -175,7 +186,7 @@ printf "**************************************************************\n"
 echo -e "*   Pre-arguments| ${@} "
 
 # Remove codebase from $1 in arglist
-# Setting application 
+# Setting application
 set -- "" $app "${@:3}"
 
 printf "*------------------------------------------------------------*\n"
