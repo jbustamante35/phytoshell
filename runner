@@ -120,42 +120,46 @@ m)
     ;;
 r)
     selection="R"
-    cmd="/yes/bin/Rscript $code_target_folder/$ver/r/DEwrapper.R"
+    export PATH="$HOME/anaconda3/bin:$PATH"
+    cmd="Rscript $code_target_folder/$ver/r/DEwrapper.R"
     ;;
 
 p)
     selection="Python"
+    export PATH="$HOME/anaconda3/bin:$PATH"
     cmd="python $code_target_folder/$ver/python/DEwrapper.py"
     ;;
 
 p2)
     selection="Python2"
+    export PATH="$HOME/anaconda3/bin:$PATH"
     cmd="python2 $code_target_folder/$ver/python/DEwrapper.py"
     ;;
 
 p3)
     selection="Python3"
+    export PATH="$HOME/anaconda3/bin:$PATH"
     cmd="python3 $code_target_folder/$ver/python/DEwrapper.py"
     ;;
 
 o)
     selection="Octave"
     cmd="octave -W $code_target_folder/$ver/octave/DEwrapper.m"
-    
+
     #fin=$code_target_folder/$ver/octave/DEwrapper.m
     #run="octave --eval \"run('$fin')\""
     #cmd="eval $run"
-    
+
     #echo "DISPLAY=$(echo $DISPLAY)"
     #echo "Setting DISPLAY to $disp"
     #disp=localhost:0
     #export DISPLAY=$disp
     #echo "DISPLAY=$(echo $DISPLAY)"
-    
+
     #echo "Initiating Xvfb..."
     #Xvfb :0 -screen 0 800x60x16 &
     #x11vnc -display :0 -N
-    
+
     ;;
 
 j)
@@ -163,22 +167,22 @@ j)
     cmd="julia $code_target_folder/$ver/julia/DEwrapper.jl"
     ;;
 
-mi)                                                                                                 
-    selection="Interactive MATLAB GUI"                                                                       
-    cmd="$code_target_folder/$ver/matlab/iPlant_ver0"                                               
-    cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak                                                
-    mv /etc/ssh/sshd_config.x11 /etc/sshd/sshd_config                                               
-    passwd --stdin plants                                                                           
-    service ssh restart                                                                             
-                                                                                                    
-    cd /usr/local/mcr/v93/sys/os/glnxa64                                                            
-    mv libstdc++.so.6 libstdc++.so.6.bak                                                            
-    cd $cmd                                                                                         
-    chmod +x $cmd                                                                                   
-                                                                                                    
+mi)
+    selection="Interactive MATLAB GUI"
+    cmd="$code_target_folder/$ver/matlab/iPlant_ver0"
+    cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+    mv /etc/ssh/sshd_config.x11 /etc/sshd/sshd_config
+    passwd --stdin plants
+    service ssh restart
+
+    cd /usr/local/mcr/v93/sys/os/glnxa64
+    mv libstdc++.so.6 libstdc++.so.6.bak
+    cd $cmd
+    chmod +x $cmd
+
     export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/    mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
-    export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults                                          
-    ;;           
+    export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults
+    ;;
 
 b)
     selection="Debug Mode"

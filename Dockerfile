@@ -54,7 +54,7 @@
 #       Julian Bustamante, Graduate Researcher (jbustamante@wisc.edu)
 #########################################################################################
 
-FROM ubuntu:18.04
+FROM ubuntu:16.04
 RUN apt-get -qq update -y && apt-get -qq upgrade -y ; \
     apt-get -qq install -y apt-utils ;
 
@@ -81,14 +81,14 @@ RUN \
 # Install anaconda to run python2.7/3.7 with dependencies
 RUN \
     curl https://repo.anaconda.com/archive/Anaconda3-5.2.0-Linux-x86_64.sh -o anaconda3.sh && \
-    yes "yes" | bash anaconda3.sh && \
+    bash anaconda3.sh -b -p $HOME/anaconda3 && \
     bash ~/.bashrc ;
 
 # Install R from Anaconda
-ADD installRfromConda.sh /
+ADD installRfromConda.sh /usr/local/bin
 RUN \
-    chmod +x installRfromConda.sh && \
-    ./installRfromConda.sh ;
+    chmod +x /usr/local/bin/installRfromConda.sh && \
+    /usr/local/bin/installRfromConda.sh
 
 # Install Julia
 RUN \
@@ -99,24 +99,24 @@ RUN \
 # Install Octave
 RUN apt-get -qq install -y octave ;
 
-RUN \                                                                                               
-    apt-get update -y && apt-get upgrade -y ; \                                                     
-    apt-get -qq install -y \                                                                        
-    python-pip python3-pip \                                                                        
-    xvfb python3-pytest x11vnc git firefox ; \                                                      
-    pip install --upgrade pip ;                                                                     
-                                                                                                    
-ENV DISPLAY :0                                                                                      
-EXPOSE 22                                                                                           
-                                                                                                    
-RUN \                                                                                               
-    mkdir ~/.vnc ; \                                                                                
-    x11vnc -storepasswd plant$ ~/.vnc/passwd ; \                                                    
-    apt-get -qq install -y \                                                                        
-    xutils x11-utils x11-common x11-session-utils x11-apps \                                        
-    libx11-6 dbus-x11 \                                                                             
-    openssh-server ssh openssh-known-hosts \                                                        
-    locate mlocate less vim ;   
+RUN \
+    apt-get update -y && apt-get upgrade -y ; \
+    apt-get -qq install -y \
+    python-pip python3-pip \
+    xvfb python3-pytest x11vnc git firefox ; \
+    pip install --upgrade pip ;
+
+ENV DISPLAY :0
+EXPOSE 22
+
+RUN \
+    mkdir ~/.vnc ; \
+    x11vnc -storepasswd plant$ ~/.vnc/passwd ; \
+    apt-get -qq install -y \
+    xutils x11-utils x11-common x11-session-utils x11-apps \
+    libx11-6 dbus-x11 \
+    openssh-server ssh openssh-known-hosts \
+    locate mlocate less vim ;
 
 ADD sshd_config.x11     /etc/ssh/
 
@@ -141,7 +141,6 @@ ADD upload-files /usr/local/bin/
 # Entrypoint for Docker image
 ADD runner /usr/local/bin/
 ADD wrapper /usr/bin/
-
 # Make scripts executable
 RUN chmod +x /usr/local/bin/runner \
     /usr/bin/wrapper
