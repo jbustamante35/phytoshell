@@ -51,20 +51,32 @@
 #################################################################################
 
 # Show docker image version
-working_directory=$(pwd)
+#working_directory=$(pwd)
+workingdir=$(pwd)
 printf "**************************************************************\n"
 printf "*         Phytomorph Docker Image Shell Version 0.5          *\n"
 printf "*                  Designed 09/25/2018                       *\n"
 printf "*         Authors: Nathan Miller, Julian Bustamante          *\n"
-printf "*           Working Directory: ${working_directory}                  *\n"
+printf "*           Working Directory: ${workingdir}                  *\n"
 printf "**************************************************************\n"
 
 # Determine if arguments should be run from commandline [run from CyVerse]
 # or downloaded from config.json [run from OSG]
 
+# Create directory structure for /loadingdock
+mkdir -p $workingdir/loadingdock/userdata/datain $workingdir/loadingdock/userdata/dataout $workingdir/loadingdock/codebase/o $workingdir/loadingdock/codebase/a
 
 if [[ $# -eq 0 ]]; then
         echo "No arguments selected. Parsing arguments from config.json"
+
+        # Debug statements
+        echo $PWD
+        find / -name config.json
+
+        # Manually move files we need to our working directory
+        cp $workingdir/config.json        $workingdir/loadingdock
+        cp $workingdir/output_ticket.list $workingdir/loadingdock
+        cp $workingdir/input_ticket.list  $workingdir/loadingdock
 
         str=$(configOSG.sh)
         output=$( echo $str | cut -f 2 -d [ | cut -f 1 -d ] )
@@ -72,12 +84,12 @@ if [[ $# -eq 0 ]]; then
 
         runner ${args[@]}
         # Return data to user's iRODS server
-        ticketParser.sh /loadingdock/output_ticket.list iput
+        ticketParser.sh $workingdir/loadingdock/output_ticket.list iput
 
 else
         # Create iRODS directory running commandline arguments [for CyVerse]
         mkdir -p ~/.irods
-        mv /loadingdock/irods_environment.json ~/.irods/
+        mv $workingdir/loadingdock/irods_environment.json ~/.irods/
         runner $@
 
 fi

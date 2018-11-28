@@ -18,7 +18,7 @@ case $var in
         ticket=$(echo $2 | cut -f 1 -d ,)
         target=$(echo $2 | cut -f 2 -d ,)
         username=$(echo $target | cut -f 4 -d /)
-        sourcedir=/loadingdock/userdata
+        sourcedir=$PWD/loadingdock/userdata
         sourcefldr=dataout
         printf "\n\nUSER: ${username}\n\n"
         printf "Using ticket ${ticket} to ${type} ${source} into ${target}\n"
@@ -40,7 +40,7 @@ case $var in
     iget)
         ticket=$(echo $2 | cut -f 1 -d ,)
         source=$(echo $2 | cut -f 2 -d ,)
-        target=/loadingdock/userdata/datain/
+        target=$PWD/loadingdock/userdata/datain/
         printf "Using ticket ${ticket} to ${type} ${source} into ${target}\n"
         iget -v -t $ticket -r $source $target
         ;;

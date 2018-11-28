@@ -56,8 +56,8 @@ printf "**************************************************************\n\n\n"
 # Get original and user's code folder from iRODS
 ofldr="/iplant/home/nmiller/phytoMorph_public_deploy"
 afldr=$1
-code_target_folder=/loadingdock/codebase
-printf "**************************************************************\n"
+#code_target_folder=/loadingdock/codebase
+code_target_folder=$PWD/loadingdock/codebase
 printf "* Downloading original (phytomorph) codebase                 *\n"
 printf "* Source folder: ${ofldr} \n"
 startO=$SECONDS
@@ -198,7 +198,8 @@ printf "**************************************************************\n"
 
 # Set working directory to data storage location and run app
 startC=$SECONDS
-cd /loadingdock/userdata/dataout/
+#cd /loadingdock/userdata/dataout/
+cd $PWD/loadingdock/userdata/dataout/
 $cmd $@
 runC=$(($SECONDS-$startC))
 
