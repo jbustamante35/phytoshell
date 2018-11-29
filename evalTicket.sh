@@ -31,8 +31,11 @@ case $var in
         # 3) Grant user permissions to master directory
         # 4) Revoke anonymous user's permissions to directory
         iput -Vrt $ticket $sourcedir/$sourcefldr $target
+
         #ls $source | xargs -I % iput -Vr $PWD/$source/% $target/$source
-        ls "$sourcedir/$sourcefldr" | xargs -t -I % iput -Vr "'$sourcedir/$sourcefldr/%'" "'$target/$sourcefldr'"
+        ls "$sourcedir/$sourcefldr" | sed 's| |\\ |g' | xargs -t -I % iput -Vr "$sourcedir/$sourcefldr/%" ""$target/$sourcefldr""
+        #ls dataout | sed 's| |\\ |g' | xargs -p -t -I % iput -Vr $PWD/dataout/% "/iplant/home/nmiller/analyses/Development_Test_App_analysis1-2018-11-28-23-26-50.2/dataout"
+
         ichmod -r own $username  "$target/$sourcefldr"
         #ichmod -r null anonymous "$target/$sourcefldr"
         ichmod -r null job "$target/$sourcefldr"
