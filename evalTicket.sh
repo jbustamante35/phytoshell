@@ -32,9 +32,9 @@ case $var in
         # 4) Revoke anonymous user's permissions to directory
         iput -Vrt $ticket $sourcedir/$sourcefldr $target
 
+        # Replace spaces in path names to '\ ' with sed
         #ls $source | xargs -I % iput -Vr $PWD/$source/% $target/$source
         ls "$sourcedir/$sourcefldr" | sed 's| |\\ |g' | xargs -t -I % iput -Vr "$sourcedir/$sourcefldr/%" ""$target/$sourcefldr""
-        #ls dataout | sed 's| |\\ |g' | xargs -p -t -I % iput -Vr $PWD/dataout/% "/iplant/home/nmiller/analyses/Development_Test_App_analysis1-2018-11-28-23-26-50.2/dataout"
 
         ichmod -r own $username  "$target/$sourcefldr"
         #ichmod -r null anonymous "$target/$sourcefldr"
@@ -46,7 +46,7 @@ case $var in
         source=$(echo $2 | cut -f 2 -d ,)
         target=$PWD/loadingdock/userdata/datain/
         printf "Using ticket ${ticket} to ${type} ${source} into ${target}\n"
-        iget -v -t $ticket -r $source $target
+        iget -v -t "$ticket" -r "$source $target"
         ;;
 
     *)
