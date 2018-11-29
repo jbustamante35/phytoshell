@@ -37,8 +37,10 @@ case $var in
         ls "$sourcedir/$sourcefldr" | sed 's| |\\ |g' | xargs -t -I % iput -Vr "$sourcedir/$sourcefldr/%" ""$target/$sourcefldr""
 
         ichmod -r own $username  "$target/$sourcefldr"
-        #ichmod -r null anonymous "$target/$sourcefldr"
-        ichmod -r null job "$target/$sourcefldr"
+        #hostname=$(jq '.irods_user_name' $target)
+        #hostname=anonymous
+        hostname=job
+        ichmod -r null $hostname "$target/$sourcefldr"
         ;;
 
     iget)
