@@ -70,8 +70,8 @@ if [[ $# -eq 0 ]]; then
         echo "No arguments selected. Parsing arguments from config.json"
 
         # Debug statements
-        echo $PWD
-        find / -name config.json
+        #echo $PWD
+        #find / -name config.json
 
         # Manually move files we need to our working directory
         cp $workingdir/config.json        $workingdir/loadingdock

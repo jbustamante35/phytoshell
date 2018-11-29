@@ -1,17 +1,18 @@
 {
- "arguments": [
-   "1",
-   "na",
-   "p_o_DEwrapper"
- ],
- "irods_host": "davos.cyverse.org",
- "irods_port": 1247,
- "irods_job_user": "sarahr",
- "irods_user_name": "anonymous",
- "irods_zone_name": "iplant",
- "input_ticket_list": "input_ticket.list",
- "output_ticket_list": "output_ticket.list",
- "status_update_url": "https://de.cyverse.org/job/77c2da2b-f290-4e7d-ac6b-74d8d4bbb726/status",
- "stdout": "out.txt",
- "stderr": "err.txt"
+  "arguments": [
+    "1",
+    "na",
+    "p_o_DEwrapper",
+    "03_10_2016_diallel"
+  ],
+  "irods_host": "davos.cyverse.org",
+  "irods_port": 1247,
+  "irods_job_user": "nmiller",
+  "irods_user_name": "job",
+  "irods_zone_name": "",
+  "input_ticket_list": "input_ticket.list",
+  "output_ticket_list": "output_ticket.list",
+  "status_update_url": "https://de.cyverse.org/job/70bbc28c-aabb-41b2-b42e-cf15023c3617/status",
+  "stdout": "out.txt",
+  "stderr": "err.txt"
 }

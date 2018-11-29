@@ -32,9 +32,10 @@ case $var in
         # 4) Revoke anonymous user's permissions to directory
         iput -Vrt $ticket $sourcedir/$sourcefldr $target
         #ls $source | xargs -I % iput -Vr $PWD/$source/% $target/$source
-        ls $sourcedir/$sourcefldr | xargs -I % iput -Vr $sourcedir/$sourcefldr/% $target/$sourcefldr
-        ichmod -r own $username  $target/$sourcefldr
-        ichmod -r null anonymous $target/$sourcefldr
+        ls "$sourcedir/$sourcefldr" | xargs -t -I % iput -Vr "'$sourcedir/$sourcefldr/%'" "'$target/$sourcefldr'"
+        ichmod -r own $username  "$target/$sourcefldr"
+        #ichmod -r null anonymous "$target/$sourcefldr"
+        ichmod -r null job "$target/$sourcefldr"
         ;;
 
     iget)

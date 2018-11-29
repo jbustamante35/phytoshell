@@ -172,14 +172,14 @@ RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock
 #ADD irods_environment.json /loadingdock/
 RUN chmod -R a+rwX /loadingdock
 
-#WORKDIR /loadingdock
+WORKDIR /loadingdock
 ADD {Plot_2435}{Experiment_80}{Planted_3-4-2018}{SeedSource_16B-7567-7}{SeedYear_2016}{Genotype_CML069}{Treatment_Control}{PictureDay_16}.nef /sampleimages/maizeseedling/
 
 # Additional Debug files
 #ADD irods_environment.json ~/.irods/
-#ADD output_ticket.list /loadingdock
-#ADD input_ticket.list /loadingdock
-#ADD config.json /loadingdock
+ADD output_ticket.list /loadingdock
+ADD input_ticket.list  /loadingdock
+ADD config.json        /loadingdock
 
 # ENTRYPOINT
 ENTRYPOINT ["/usr/bin/wrapper"]
