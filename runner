@@ -1,5 +1,6 @@
 #!/bin/bash
 #################################################################################
+<<<<<<< HEAD
 # This is the wrapper script that serves as the ENTRYPOINT for the phytoshell
 # Docker image. It parses through command line arguments to determine the
 # codebase and application to run, and which programming language with which
@@ -18,6 +19,13 @@
 #               application -> name of application to run
 #       additional arguments: any command line arguments to pass into the application
 #
+=======
+# This is the runner script called by the wrapper script that parses through
+# command line arguments to determine how to run the application. The wrapper
+# script determines whether to run the application through CyVerse or the
+# Open Science Grid,
+#
+>>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 # Pipeline Overview:
 #       1) Check input arguments for language, codebase, and application
 #       2) Set codebase directory  and configure language environment
@@ -26,10 +34,15 @@
 # Authors
 #       Nathan Miller, Senior Scientist (ndmill@gmail.com)
 #       Julian Bustamante, Graduate Researcher (jbustamante@wisc.edu)
-#################################################################################
+###############################################################################
 
+<<<<<<< HEAD
 set -e
 
+=======
+# Determine verbosity level and then remove it from the arguments
+# Any non-zero input defaults to strong verbosity
+>>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 verb=$1
 set -- "${@:2}"
 
@@ -71,6 +84,7 @@ printf "**************************************************************\n\n\n"
 # Get original and user's code folder from iRODS
 ofldr="/iplant/home/nmiller/phytoMorph_public_deploy"
 afldr=$1
+<<<<<<< HEAD
 code_target_folder=$(pwd)/codebase
 printf "**************************************************************\n"
 printf "* Downloading original (phytomorph) codebase                 *\n"
@@ -81,6 +95,18 @@ iget -rf $vlvl $ofldr/r $code_target_folder/o
 iget -rf $vlvl $ofldr/python $code_target_folder/o
 iget -rf $vlvl $ofldr/octave $code_target_folder/o
 iget -rf $vlvl $ofldr/julia $code_target_folder/o
+=======
+#code_target_folder=/loadingdock/codebase
+code_target_folder=$PWD/loadingdock/codebase
+printf "* Downloading original (phytomorph) codebase                 *\n"
+printf "* Source folder: ${ofldr} \n"
+startO=$SECONDS
+iget -r $vlvl "$ofldr/matlab" "$code_target_folder/o"
+iget -r $vlvl "$ofldr/r"      "$code_target_folder/o"
+iget -r $vlvl "$ofldr/python" "$code_target_folder/o"
+iget -r $vlvl "$ofldr/octave" "$code_target_folder/o"
+iget -r $vlvl "$ofldr/julia"  "$code_target_folder/o"
+>>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 runO=$(($SECONDS-$startO))
 printf "*------------------------------------------------------------*\n"
 printf "* ${runO} seconds to download original codebase\n"
@@ -93,13 +119,20 @@ startA=$SECONDS
 case $afldr in
 na)
     ;;
-
 *)
+<<<<<<< HEAD
     iget -rf $vlvl $afldr/matlab $code_target_folder/a
     iget -rf $vlvl $afldr/r $code_target_folder/a
     iget -rf $vlvl $afldr/python $code_target_folder/a
     iget -rf $vlvl $afldr/octave $code_target_folder/a
     iget -rf $vlvl $afldr/julia $code_target_folder/a
+=======
+    iget -r $vlvl "$afldr/matlab" "$code_target_folder/a"
+    iget -r $vlvl "$afldr/r"      "$code_target_folder/a"
+    iget -r $vlvl "$afldr/python" "$code_target_folder/a"
+    iget -r $vlvl "$afldr/octave" "$code_target_folder/a"
+    iget -r $vlvl "$afldr/julia"  "$code_target_folder/a"
+>>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
     ;;
 esac
 
@@ -118,27 +151,45 @@ m)
     export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64
     export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults
     ;;
+<<<<<<< HEAD
 r)
     selection="R"
     export PATH="$HOME/anaconda3/bin:$PATH"
     cmd="Rscript $code_target_folder/$ver/r/DEwrapper.R"
+=======
+
+r)
+    selection="R"
+    cmd="/yes/bin/Rscript $code_target_folder/$ver/r/DEwrapper.R"
+>>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
     ;;
 
 p)
     selection="Python"
+<<<<<<< HEAD
     export PATH="$HOME/anaconda3/bin:$PATH"
+=======
+>>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
     cmd="python $code_target_folder/$ver/python/DEwrapper.py"
     ;;
 
 p2)
     selection="Python2"
+<<<<<<< HEAD
     export PATH="$HOME/anaconda3/bin:$PATH"
+=======
+>>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
     cmd="python2 $code_target_folder/$ver/python/DEwrapper.py"
     ;;
 
 p3)
+<<<<<<< HEAD
     selection="Python3"
     export PATH="$HOME/anaconda3/bin:$PATH"
+=======
+
+    selection="Python3"
+>>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
     cmd="python3 $code_target_folder/$ver/python/DEwrapper.py"
     ;;
 
@@ -180,7 +231,11 @@ mi)
     cd $cmd
     chmod +x $cmd
 
+<<<<<<< HEAD
     export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/    mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+=======
+    export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+>>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
     export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults
     ;;
 
@@ -217,7 +272,12 @@ printf "**************************************************************\n"
 
 # Set working directory to data storage location and run app
 startC=$SECONDS
+<<<<<<< HEAD
 cd userdata/dataout/
+=======
+#cd /loadingdock/userdata/dataout/
+cd $PWD/loadingdock/userdata/dataout/
+>>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 $cmd $@
 runC=$(($SECONDS-$startC))
 
@@ -226,3 +286,9 @@ echo -e "* Ending Command| ${cmd} ${@} "
 printf "*------------------------------------------------------------*\n"
 printf "* ${runC} seconds to run command \n"
 printf "**************************************************************\n"
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
