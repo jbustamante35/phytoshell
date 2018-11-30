@@ -33,10 +33,9 @@ case $var in
         iput -Vrt $ticket $sourcedir/$sourcefldr $target
 
         # Replace spaces in path names to '\ ' with sed
-        #ls $source | xargs -I % iput -Vr $PWD/$source/% $target/$source
         ls "$sourcedir/$sourcefldr" | sed 's| |\\ |g' | xargs -t -I % iput -Vr $sourcedir/$sourcefldr/% "$target/$sourcefldr"
 
-        ichmod -r own $username  "$target/$sourcefldr"
+        ichmod -r own $username "$target/$sourcefldr"
         #hostname=$(jq '.irods_user_name' $target)
         #hostname=anonymous
         hostname=job
