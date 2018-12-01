@@ -66,7 +66,6 @@ RUN \
 
 # Install iRODS commands [ downgrade 4.1.11 to 4.1.09 (10/19/18) ]
 RUN \
-    #curl ftp://ftp.renci.org/pub/irods/releases/4.1.11/ubuntu14/irods-icommands-4.1.11-ubuntu14-x86_64.deb -o irods-icommands.deb ; \
     curl ftp://ftp.renci.org/pub/irods/releases/4.1.9/ubuntu14/irods-icommands-4.1.9-ubuntu14-x86_64.deb -o irods-icommands.deb ; \
     dpkg -i irods-icommands.deb ;
 
@@ -121,16 +120,6 @@ RUN \
     openssh-server ssh openssh-known-hosts \
     locate mlocate less vim ;
 
-# Old method
-#RUN \
-#    mkdir -p ~/.vnc ; \
-#    apt-get -qq install -y \
-#    xutils x11-utils x11-common x11-session-utils x11-apps \
-#    libx11-6 dbus-x11 \
-#    openssh-server ssh openssh-known-hosts \
-#    locate mlocate less vim ;
-#ENV DISPLAY :0
-#EXPOSE 22
 ADD sshd_config.x11     /etc/ssh/
 
 # Delete installation files
@@ -144,32 +133,19 @@ ADD eSFRdefaultGrayReference.mat /usr/local/bin/
 # Debugging scripts to test languages from /bin/bash
 ADD langtest/ /usr/local/langtest/
 
-# Parse lines of input_ticket.list for configOSG.sh
-ADD evalTicket.sh /usr/local/bin/
-ADD ticketParser.sh /usr/local/bin/
-
-# Extract arguments from config.json file for configOSG.sh
-ADD configOSG.sh /usr/local/bin/
-ADD parseConfig.sh /usr/local/bin/
-
 # Entrypoint for Docker image
 ADD runner /usr/local/bin/
 ADD wrapper /usr/bin/
 
 # Make shell scripts executable
 RUN chmod +x \
-    /usr/local/bin/evalTicket.sh \
-    /usr/local/bin/ticketParser.sh \
-    /usr/local/bin/parseConfig.sh \
-    /usr/local/bin/configOSG.sh \
     /usr/local/bin/runner \
     /usr/bin/wrapper ;
 
 # Create original and alternate codebases for configOSG.sh
-#RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock/userdata/datain /loadingdock/userdata/dataout /loadingdock/codebase/o /loadingdock/codebase/a
 RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock
 
-#ADD irods_environment.json /loadingdock/
+ADD irods_environment.json /loadingdock/
 RUN chmod -R a+rwX /loadingdock
 
 WORKDIR /loadingdock

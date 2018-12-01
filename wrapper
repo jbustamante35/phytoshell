@@ -5,6 +5,9 @@
 # codebase and application to run, and which programming language with which
 # to run the application.
 #
+# In this version, I compiled each of our functions into a single file. I'm
+# hoping this helps with simplicity in debugging everything.
+#
 # Usage:
 #       docker run -it phytoshell [verbosity] [codebase] [language_version_application] [additional arguments]
 #
@@ -48,10 +51,8 @@
 # Authors
 #       Nathan Miller, Senior Scientist (ndmill@gmail.com)
 #       Julian Bustamante, Graduate Researcher (jbustamante@wisc.edu)
-#################################################################################
+###############################################################################
 
-# Show docker image version
-#working_directory=$(pwd)
 workingdir=$(pwd)
 printf "**************************************************************\n"
 printf "*         Phytomorph Docker Image Shell Version 0.5          *\n"
@@ -60,37 +61,183 @@ printf "*         Authors: Nathan Miller, Julian Bustamante          *\n"
 printf "*           Working Directory: ${workingdir}                  *\n"
 printf "**************************************************************\n"
 
+######################### Helper Functions ####################################
+evalTicket () {
+    # Usage: evalTicket [ticket] [target] [command]
+    # ticket: iRODS hex code verification
+    # target: directory for extracting/exporting data
+    # command: 'iget' to extract data (iget) 'iput' to export data (iput)
+
+    # Parse iRODS input file to get ticket and data
+    var=$2
+    var=$(echo ${var:0:1})
+    type=$1
+
+    case $var in
+    '#')
+            ;;
+    *)
+        case $type in
+        iput)
+            ticket=$(echo $2 | cut -f 1 -d ,)
+            target=$(echo $2 | cut -f 2 -d ,)
+            username=$(echo $target | cut -f 4 -d /)
+            sourcedir=$PWD/loadingdock/userdata
+            sourcefldr=dataout
+            printf "\n\nUSER: ${username}\n\n"
+            printf "Using ticket ${ticket} to ${type} ${source} into ${target}\n"
+            #iput -v -t $ticket -r $source $target
+
+            # Upload output structure to CyVerse
+            # 1) Create master output directory into user's CyVerse directory
+            # 2) List master directory structure then call xargs to recursively iput each
+            #       file/folder into user's master directory
+            # 3) Grant user permissions to master directory
+            # 4) Revoke anonymous user's permissions to directory
+            iput -Vrt $ticket $sourcedir/$sourcefldr $target
+
+            # Replace spaces in path names to '\ ' with sed
+            ls "$sourcedir/$sourcefldr" | sed 's| |\\ |g' | xargs -t -I % \
+                iput -Vr $sourcedir/$sourcefldr/% "$target/$sourcefldr"
+
+            ichmod -r own $username "$target/$sourcefldr"
+            #hostname=$(jq '.irods_user_name' $target)
+            #hostname=anonymous
+            hostname=job
+            ichmod -r null $hostname "$target/$sourcefldr"
+            ;;
+
+        iget)
+            ticket=$(echo $2 | cut -f 1 -d ,)
+            source=$(echo $2 | cut -f 2 -d ,)
+            target=$PWD/loadingdock/userdata/datain/
+            printf "Using ticket ${ticket} to ${type} ${source} into ${target}\n"
+            iget -v -t "$ticket" -r "$source $target"
+            ;;
+
+        *)
+            ;;
+        esac
+    esac
+
+}
+
+ticketParser () {
+    fin=$1
+    icmd=$2
+
+    # Determine if extracting or exporting data
+    case $icmd in
+    iget)
+
+        source=$PWD/loadingdock/userdata/datain/
+        ;;
+
+    iput)
+        source=$PWD/loadingdock/userdata/dataout/
+        ;;
+
+    *)
+        echo "error with icommand, ..."
+        source=$PWD/loadingdock/userdata/dataout/
+        ;;
+
+    esac
+
+    # Parse through ticket list to either extract or export data
+    while IFS='' read -r line || [[ -n "$line" ]]; do
+           evalTicket $icmd $line
+    done < "$fin"
+
+}
+
+parseConfig () {
+    # Parse through config.json file to extract arguments
+    # Arguments are extracted in the following order:
+    #   arguments: [
+    #        "verbosity",
+    #        "user_codebase",
+    #        "lang_codebase_application",
+    #        "input_data"
+    #    ]
+
+    # Concatenate new lines --> extract between '[' and ']' --> remove '"'
+    fin=$1
+    str=$(echo $fin | tr "\n" " " | cut -f 2 -d [ | cut -f 1 -d ] | tr -d "\"" )
+
+    echo $str
+
+}
+
+configOSG () {
+    # Init input file of arguments
+    printf "\n**************************************************************\n"
+    printf "*                                                            *\n"
+    printf "* Downloading user data from iRODS                           *\n"
+    printf "*                                                            *\n"
+    printf "**************************************************************\n"
+    # Get user data from iRODS by parsing through tickets,directories file
+    # If
+    tickets=$PWD/loadingdock/input_ticket.list
+    ticketParser $tickets
+
+    printf "**************************************************************\n"
+    printf "*                                                            *\n"
+    printf "* Successfully downloaded  user data                         *\n"
+    printf "*                                                            *\n"
+    printf "**************************************************************\n\n"
+
+    mkdir -p ~/.irods
+    mv $PWD/loadingdock/config.json ~/.irods/irods_environment.json
+    args=$(parseConfig "$(< ~/.irods/irods_environment.json)")
+    echo "[ $args ]"
+
+}
+
+runOSG () {
+    echo "No arguments selected. Parsing arguments from config.json"
+
+    # Debug statements
+    #echo $PWD
+    #find / -name config.json
+
+    # Manually move files we need to our working directory
+    cp $workingdir/config.json        $workingdir/loadingdock
+    cp $workingdir/output_ticket.list $workingdir/loadingdock
+    cp $workingdir/input_ticket.list  $workingdir/loadingdock
+
+    str=$(configOSG)
+    output=$( echo $str | cut -f 2 -d [ | cut -f 1 -d ] )
+    args=(${output//,/ })
+
+    runner ${args[@]}
+    # Return data to user's iRODS server
+    ticketParser $workingdir/loadingdock/output_ticket.list iput
+}
+
+runCyverse () {
+    # Create iRODS directory running commandline arguments [for CyVerse]
+    mkdir -p ~/.irods
+    mv /loadingdock/irods_environment.json ~/.irods/
+    runner $@
+}
+
+########################### Main Function #####################################
 # Determine if arguments should be run from commandline [run from CyVerse]
 # or downloaded from config.json [run from OSG]
 
 # Create directory structure for /loadingdock
-mkdir -p $workingdir/loadingdock/userdata/datain $workingdir/loadingdock/userdata/dataout $workingdir/loadingdock/codebase/o $workingdir/loadingdock/codebase/a
+mkdir -p \
+    $workingdir/loadingdock/userdata/datain  \
+    $workingdir/loadingdock/userdata/dataout \
+    $workingdir/loadingdock/codebase/o       \
+    $workingdir/loadingdock/codebase/a
 
 if [[ $# -eq 0 ]]; then
-        echo "No arguments selected. Parsing arguments from config.json"
-
-        # Debug statements
-        #echo $PWD
-        #find / -name config.json
-
-        # Manually move files we need to our working directory
-        cp $workingdir/config.json        $workingdir/loadingdock
-        cp $workingdir/output_ticket.list $workingdir/loadingdock
-        cp $workingdir/input_ticket.list  $workingdir/loadingdock
-
-        str=$(configOSG.sh)
-        output=$( echo $str | cut -f 2 -d [ | cut -f 1 -d ] )
-        args=(${output//,/ })
-
-        runner ${args[@]}
-        # Return data to user's iRODS server
-        ticketParser.sh $workingdir/loadingdock/output_ticket.list iput
-
+    echo "Running from OSG"
+    runOSG
 else
-        # Create iRODS directory running commandline arguments [for CyVerse]
-        mkdir -p ~/.irods
-        mv $workingdir/loadingdock/irods_environment.json ~/.irods/
-        runner $@
-
+    echo "Running from CyVerse"
+    runCyverse
 fi
 
