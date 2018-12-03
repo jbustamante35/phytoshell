@@ -39,7 +39,9 @@ case $var in
         #hostname=$(jq '.irods_user_name' $target)
         #hostname=anonymous
         hostname=job
-        ichmod -r null $hostname "$target/$sourcefldr"
+
+        # Don't revoke permissions for user job
+        #ichmod -r null $hostname "$target/$sourcefldr"
         ;;
 
     iget)
