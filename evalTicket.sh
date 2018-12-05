@@ -4,6 +4,8 @@
 # target: directory for extracting/exporting data
 # command: 'iget' to extract data (iget) 'iput' to export data (iput)
 
+set -x
+
 # Parse iRODS input file to get ticket and data
 var=$2
 var=$(echo ${var:0:1})
@@ -26,22 +28,26 @@ case $var in
 
         # Upload output structure to CyVerse
         # 1) Create master output directory into user's CyVerse directory
-        # 2) List master directory structure then call xargs to recursively iput each
+        # 2) Grant ownership permission to the `job` user in case inheritance is enabled.
+        # 3) List master directory structure then call xargs to recursively iput each
         #       file/folder into user's master directory
-        # 3) Grant user permissions to master directory
-        # 4) Revoke anonymous user's permissions to directory
-        iput -Vrt $ticket $sourcedir/$sourcefldr $target
-
+        # 4) Grant user permissions to master directory
+        # 5) Revoke anonymous user's permissions to directory
+        iput -Vrt "$ticket" "$sourcedir/$sourcefldr" "$target" > /dev/null 2>&1
+        ichmod -r own job "$target/$sourcefldr"
         # Replace spaces in path names to '\ ' with sed
-        ls "$sourcedir/$sourcefldr" | sed 's| |\\ |g' | xargs -t -I % iput -Vr $sourcedir/$sourcefldr/% "$target/$sourcefldr"
+        ls "$sourcedir/$sourcefldr" | \
+        sed 's| |\\ |g' | \
+        xargs -t -I % iput -Vr $sourcedir/$sourcefldr/% "$target/$sourcefldr"
 
-        ichmod -r own $username "$target/$sourcefldr"
-        #hostname=$(jq '.irods_user_name' $target)
-        #hostname=anonymous
+        # For loop version [ Sarah Roberts ]
+        #for file in "$sourcedir/$sourcefldr"/*; do
+        #    iput -Vr "$file" "$target/$sourcefldr/"
+        #done
+
+        ichmod -r own $username  "$target/$sourcefldr"
         hostname=job
-
-        # Don't revoke permissions for user job
-        #ichmod -r null $hostname "$target/$sourcefldr"
+        ichmod -r null $hostname "$target/$sourcefldr"
         ;;
 
     iget)
@@ -56,4 +62,3 @@ case $var in
         ;;
     esac
 esac
-
