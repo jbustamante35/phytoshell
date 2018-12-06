@@ -169,7 +169,7 @@ RUN chmod +x \
 #RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock/userdata/datain /loadingdock/userdata/dataout /loadingdock/codebase/o /loadingdock/codebase/a
 RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock
 
-#ADD irods_environment.json /loadingdock/
+ADD irods_environment.json /loadingdock/
 RUN chmod -R a+rwX /loadingdock
 
 WORKDIR /loadingdock

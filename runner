@@ -36,21 +36,21 @@ esac
 # Check input arguments
 printf "* Input Arguments                                            *\n"
 printf "*------------------------------------------------------------*\n"
-printf "*    Code folder| ${1}\n"
-printf "* Lang_[o|a]_app| ${2}\n"
-printf "*           Data| ${3}\n"
+printf "*    Code folder| %s\n" "$1"
+printf "* Lang_[o|a]_app| %s\n" "$2"
+printf "*           Data| %s\n" "$3"
 printf "**************************************************************\n"
 
 # Parse through key_value hash to get language_application
-lang=$(echo $2 | cut -f 1 -d _)
-ver=$(echo $2 | cut -f 2 -d _)
-app=$(echo $2 | cut -f 3 -d _)
+lang=$(echo "$2" | cut -f 1 -d _)
+ver=$(echo  "$2" | cut -f 2 -d _)
+app=$(echo  "$2" | cut -f 3 -d _)
 
 printf "* Results from parsed argument Lang_[o|a]_app                *\n"
 printf "*------------------------------------------------------------*\n"
-printf "* Lang| ${lang} \n"
-printf "*  Ver| ${ver} \n"
-printf "*  App| ${app}\n"
+printf "* Lang| %s\n" "$lang"
+printf "*  Ver| %s\n" "$ver"
+printf "*  App| %s\n" "$app"
 printf "**************************************************************\n\n\n"
 
 # Get original and user's code folder from iRODS
@@ -59,7 +59,7 @@ afldr=$1
 #code_target_folder=/loadingdock/codebase
 code_target_folder=$PWD/loadingdock/codebase
 printf "* Downloading original (phytomorph) codebase                 *\n"
-printf "* Source folder: ${ofldr} \n"
+printf "* Source folder: %s\n" "$ofldr "
 startO=$SECONDS
 iget -r $vlvl "$ofldr/matlab" "$code_target_folder/o"
 iget -r $vlvl "$ofldr/r"      "$code_target_folder/o"
@@ -68,11 +68,11 @@ iget -r $vlvl "$ofldr/octave" "$code_target_folder/o"
 iget -r $vlvl "$ofldr/julia"  "$code_target_folder/o"
 runO=$(($SECONDS-$startO))
 printf "*------------------------------------------------------------*\n"
-printf "* ${runO} seconds to download original codebase\n"
+printf "* %s seconds to download original codebase\n" "$runO"
 printf "**************************************************************\n"
 
 printf "* Downloading alternate codebase                             *\n"
-printf "* Source folder: ${afldr} \n"
+printf "* Source folder: %s \n" "$afldr"
 startA=$SECONDS
 case $afldr in
 na)
@@ -87,7 +87,7 @@ na)
 esac
 runA=$(($SECONDS-$startA))
 printf "*------------------------------------------------------------*\n"
-printf "* ${runA} seconds to download alternate codebase\n"
+printf "* %s seconds to download alternate codebase\n" "$runA"
 printf "**************************************************************\n\n\n"
 
 
@@ -97,7 +97,7 @@ case $lang in
 m)
     selection="MATLAB"
     cmd=$code_target_folder/$ver/matlab/DEwrapper
-    chmod +x $cmd
+    chmod +x "$cmd"
     export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64
     export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults
     ;;
@@ -156,10 +156,10 @@ mi)
     passwd --stdin plants
     service ssh restart
 
-    cd /usr/local/mcr/v93/sys/os/glnxa64
+    cd /usr/local/mcr/v93/sys/os/glnxa64 || exit
     mv libstdc++.so.6 libstdc++.so.6.bak
-    cd $cmd
-    chmod +x $cmd
+    cd "$cmd" || exit
+    chmod +x "$cmd"
 
     export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
     export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults
@@ -178,35 +178,36 @@ b)
 esac
 
 printf "**************************************************************\n"
-printf "* ${selection} selected \n"
+printf "* %s selected \n" "$selection"
 printf "**************************************************************\n"
 
 # Reconfigure arguments and Run commands
 # Sets codebase directory ($1) to empty and sets application to $2
-echo -e "*   Pre-arguments| ${@} "
+#echo -e "*   Pre-arguments| ${@} "
+printf "*   Pre-arguments| %s \n" "$@"
 
 # Remove codebase from $1 in arglist
 # Setting application
-set -- "" $app "${@:3}"
+set -- "" "$app" "${@:3}"
 
 printf "*------------------------------------------------------------*\n"
-echo -e "*  Post-arguments| ${@} "
+printf "*  Post-arguments| %s \n" "$@"
 printf "**************************************************************\n"
 
-echo -e "* Running Command| ${cmd} ${@} "
+printf "* Running Command| %s %s\n" "$cmd" "$@"
 printf "**************************************************************\n"
 
 # Set working directory to data storage location and run app
 startC=$SECONDS
 #cd /loadingdock/userdata/dataout/
-cd $PWD/loadingdock/userdata/dataout/
+cd "$PWD"/loadingdock/userdata/dataout/ || exit
 $cmd $@
 runC=$(($SECONDS-$startC))
 
 printf "**************************************************************\n"
-echo -e "* Ending Command| ${cmd} ${@} "
+printf "* Ending Command| %s %s\n " "$cmd" "$@"
 printf "*------------------------------------------------------------*\n"
-printf "* ${runC} seconds to run command \n"
+printf "* %s seconds to run command \n" "$runC"
 printf "**************************************************************\n"
 
 
