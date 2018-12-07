@@ -63,11 +63,16 @@ printf "**************************************************************\n"
 # Determine if arguments should be run from commandline [run from CyVerse]
 # or downloaded from config.json [run from OSG]
 
+# Set PATH to include Anaconda3
+export PATH=$PATH:$HOME/anaconda3/bin
+
 # Create directory structure for /loadingdock
 mkdir -p "$workingdir"/loadingdock/userdata/datain  \
          "$workingdir"/loadingdock/userdata/dataout \
          "$workingdir"/loadingdock/codebase/o       \
          "$workingdir"/loadingdock/codebase/a
+
+printf "The current date is %s\n" "$(date)"
 
 if [[ $# -eq 0 ]]; then
         echo "No arguments selected. Parsing arguments from config.json"

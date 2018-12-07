@@ -167,13 +167,14 @@ RUN chmod +x \
 
 # Create original and alternate codebases for configOSG.sh
 #RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock/userdata/datain /loadingdock/userdata/dataout /loadingdock/codebase/o /loadingdock/codebase/a
-RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock
+RUN mkdir -p /sampleimages/stomata/ /sampleimages/maizeseedling/ /loadingdock
 
 ADD irods_environment.json /loadingdock/
 RUN chmod -R a+rwX /loadingdock
 
 WORKDIR /loadingdock
 ADD {Plot_2435}{Experiment_80}{Planted_3-4-2018}{SeedSource_16B-7567-7}{SeedYear_2016}{Genotype_CML069}{Treatment_Control}{PictureDay_16}.nef /sampleimages/maizeseedling/
+ADD surghumstomata.nms /sampleimages/stomata
 
 # Additional Debug files
 #ADD irods_environment.json ~/.irods/
