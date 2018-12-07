@@ -104,7 +104,7 @@ m)
 
 r)
     selection="R"
-    cmd="/yes/bin/Rscript $code_target_folder/$ver/r/DEwrapper.R"
+    cmd="/usr/bin/Rscript $code_target_folder/$ver/r/DEwrapper.R"
     ;;
 
 p)

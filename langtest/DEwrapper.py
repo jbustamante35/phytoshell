@@ -6,7 +6,8 @@ os.mkdir(newdir)
 
 fname = newdir + "i_am_a_file.txt"
 fout = open(fname, "w")
-text = """\n\n\n		_,..,,,_
+text = """\n\n\n
+                    _,..,,,_
                      '``````^~"-,_`"-,_
        .-~c~-.                    `~:. ^-.
    `~~~-.c    ;                      `:.  `-,     _.-~~^^~:.
