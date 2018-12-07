@@ -38,7 +38,7 @@ printf "* Input Arguments                                            *\n"
 printf "*------------------------------------------------------------*\n"
 printf "*    Code folder| %s\n" "$1"
 printf "* Lang_[o|a]_app| %s\n" "$2"
-printf "*           Data| %s\n" "$3"
+echo -e "*           Data| ${@:3}\n"
 printf "**************************************************************\n"
 
 # Parse through key_value hash to get language_application
@@ -56,7 +56,7 @@ printf "**************************************************************\n\n\n"
 # Get original and user's code folder from iRODS
 ofldr="/iplant/home/nmiller/phytoMorph_public_deploy"
 afldr=$1
-#code_target_folder=/loadingdock/codebase
+
 code_target_folder=$PWD/loadingdock/codebase
 printf "* Downloading original (phytomorph) codebase                 *\n"
 printf "* Source folder: %s\n" "$ofldr "
@@ -183,29 +183,27 @@ printf "**************************************************************\n"
 
 # Reconfigure arguments and Run commands
 # Sets codebase directory ($1) to empty and sets application to $2
-#echo -e "*   Pre-arguments| ${@} "
-printf "*   Pre-arguments| %s \n" "$@"
+echo -e "*   Pre-arguments| ${@} "
 
 # Remove codebase from $1 in arglist
 # Setting application
 set -- "" "$app" "${@:3}"
 
 printf "*------------------------------------------------------------*\n"
-printf "*  Post-arguments| %s \n" "$@"
+echo -e "*  Post-arguments| $@ \n"
 printf "**************************************************************\n"
 
-printf "* Running Command| %s %s\n" "$cmd" "$@"
+echo -e "* Running Command| $cmd $@ \n"
 printf "**************************************************************\n"
 
 # Set working directory to data storage location and run app
 startC=$SECONDS
-#cd /loadingdock/userdata/dataout/
 cd "$PWD"/loadingdock/userdata/dataout/ || exit
 $cmd $@
 runC=$(($SECONDS-$startC))
 
 printf "**************************************************************\n"
-printf "* Ending Command| %s %s\n " "$cmd" "$@"
+echo -e "* Ending Command| $cmd $@ \n "
 printf "*------------------------------------------------------------*\n"
 printf "* %s seconds to run command \n" "$runC"
 printf "**************************************************************\n"
