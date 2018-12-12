@@ -1,31 +1,10 @@
 #!/bin/bash
 #################################################################################
-<<<<<<< HEAD
-# This is the wrapper script that serves as the ENTRYPOINT for the phytoshell
-# Docker image. It parses through command line arguments to determine the
-# codebase and application to run, and which programming language with which
-# the application.
-#
-# Usage:
-#       docker run -it phytoshell [verbosity] [codebase] [language_version_application] [additional arguments]
-#
-# Input:
-#       verbosity: output for iRODS command to download codebase (0-none, 1-strong)
-#       codebase: CyVerse path to directory containing code and libraries for the application
-#                 [our codebase is /iplant/home/nmiller/phytoMorph_public_deploy]
-#       language_version_application: argument must be in this format (delimiter _)
-#               language -> m:matlab, r:R, p:python, o:octave, j:julia, b:debug_mode
-#               version -> o:original codebase (ours), a:alternate codebase (user-defined)
-#               application -> name of application to run
-#       additional arguments: any command line arguments to pass into the application
-#
-=======
 # This is the runner script called by the wrapper script that parses through
 # command line arguments to determine how to run the application. The wrapper
 # script determines whether to run the application through CyVerse or the
 # Open Science Grid,
 #
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 # Pipeline Overview:
 #       1) Check input arguments for language, codebase, and application
 #       2) Set codebase directory  and configure language environment
@@ -36,13 +15,9 @@
 #       Julian Bustamante, Graduate Researcher (jbustamante@wisc.edu)
 ###############################################################################
 
-<<<<<<< HEAD
-set -e
-
-=======
 # Determine verbosity level and then remove it from the arguments
 # Any non-zero input defaults to strong verbosity
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
+set -e
 verb=$1
 set -- "${@:2}"
 
@@ -64,132 +39,106 @@ esac
 # Check input arguments
 printf "* Input Arguments                                            *\n"
 printf "*------------------------------------------------------------*\n"
-printf "*    Code folder| ${1}\n"
-printf "* Lang_[o|a]_app| ${2}\n"
-printf "*           Data| ${3}\n"
+printf "*    Code folder| %s\n" "$1"
+printf "* Lang_[o|a]_app| %s\n" "$2"
+echo -e "*           Data| ${@:3}\n"
 printf "**************************************************************\n"
 
 # Parse through key_value hash to get language_application
-lang=$(echo $2 | cut -f 1 -d _)
-ver=$(echo $2 | cut -f 2 -d _)
-app=$(echo $2 | cut -f 3 -d _)
+lang=$(echo "$2" | cut -f 1 -d _)
+ver=$(echo  "$2" | cut -f 2 -d _)
+app=$(echo  "$2" | cut -f 3 -d _)
 
 printf "* Results from parsed argument Lang_[o|a]_app                *\n"
 printf "*------------------------------------------------------------*\n"
-printf "* Lang| ${lang} \n"
-printf "*  Ver| ${ver} \n"
-printf "*  App| ${app}\n"
+printf "* Lang| %s\n" "$lang"
+printf "*  Ver| %s\n" "$ver"
+printf "*  App| %s\n" "$app"
 printf "**************************************************************\n\n\n"
 
 # Get original and user's code folder from iRODS
 ofldr="/iplant/home/nmiller/phytoMorph_public_deploy"
 afldr=$1
-<<<<<<< HEAD
-code_target_folder=$(pwd)/codebase
-printf "**************************************************************\n"
-printf "* Downloading original (phytomorph) codebase                 *\n"
-printf "* Source folder: ${ofldr} \n"
-startO=$SECONDS
-iget -rf $vlvl $ofldr/matlab $code_target_folder/o
-iget -rf $vlvl $ofldr/r $code_target_folder/o
-iget -rf $vlvl $ofldr/python $code_target_folder/o
-iget -rf $vlvl $ofldr/octave $code_target_folder/o
-iget -rf $vlvl $ofldr/julia $code_target_folder/o
-=======
-#code_target_folder=/loadingdock/codebase
+
+# Get base names of code bases [ omit iRODS path name ]
+obase=$(echo "$ofldr" | rev | cut -d'/' -f 1 | rev)
+abase=$(echo "$afldr" | rev | cut -d'/' -f 1 | rev)
+
 code_target_folder=$PWD/loadingdock/codebase
 printf "* Downloading original (phytomorph) codebase                 *\n"
-printf "* Source folder: ${ofldr} \n"
+printf "* Source folder: %s\n" "$ofldr "
 startO=$SECONDS
-iget -r $vlvl "$ofldr/matlab" "$code_target_folder/o"
-iget -r $vlvl "$ofldr/r"      "$code_target_folder/o"
-iget -r $vlvl "$ofldr/python" "$code_target_folder/o"
-iget -r $vlvl "$ofldr/octave" "$code_target_folder/o"
-iget -r $vlvl "$ofldr/julia"  "$code_target_folder/o"
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
+
+iget -r $vlvl "$ofldr" "$code_target_folder"
+
+# Replace spaces in path name then move contents to code folder
+otmp=$(echo "$code_target_folder/$obase" | sed 's| |\\ |g')
+echo "otmp: $otmp"
+mv $otmp/* $code_target_folder/o
+rmdir "$otmp"
+
 runO=$(($SECONDS-$startO))
 printf "*------------------------------------------------------------*\n"
-printf "* ${runO} seconds to download original codebase\n"
+printf "* %s seconds to download original codebase\n" "$runO"
 printf "**************************************************************\n"
 
 printf "* Downloading alternate codebase                             *\n"
-printf "* Source folder: ${afldr} \n"
+printf "* Source folder: %s \n" "$afldr"
 startA=$SECONDS
 
 case $afldr in
 na)
     ;;
 *)
-<<<<<<< HEAD
-    iget -rf $vlvl $afldr/matlab $code_target_folder/a
-    iget -rf $vlvl $afldr/r $code_target_folder/a
-    iget -rf $vlvl $afldr/python $code_target_folder/a
-    iget -rf $vlvl $afldr/octave $code_target_folder/a
-    iget -rf $vlvl $afldr/julia $code_target_folder/a
-=======
-    iget -r $vlvl "$afldr/matlab" "$code_target_folder/a"
-    iget -r $vlvl "$afldr/r"      "$code_target_folder/a"
-    iget -r $vlvl "$afldr/python" "$code_target_folder/a"
-    iget -r $vlvl "$afldr/octave" "$code_target_folder/a"
-    iget -r $vlvl "$afldr/julia"  "$code_target_folder/a"
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
+    iget -r $vlvl "$afldr" "$code_target_folder"
+
+    # Replace spaces in path name then move contents to code folder
+    atmp=$(echo "$code_target_folder/$abase" | sed 's| |\\ |g')
+    echo "atmp: $atmp"
+    mv $otmp/* $code_target_folder/a
+    rmdir "$atmp"
     ;;
 esac
 
 runA=$(($SECONDS-$startA))
 printf "*------------------------------------------------------------*\n"
-printf "* ${runA} seconds to download alternate codebase\n"
+printf "* %s seconds to download alternate codebase\n" "$runA"
 printf "**************************************************************\n\n\n"
 
+# Make all executables from dependencies folders and set new PATH
+mkdir -p $code_target_folder/o/common_dependencies/exe \
+         $code_target_folder/a/common_dependencies/exe
+chmod -R +x $code_target_folder/o/common_dependencies/exe \
+            $code_target_folder/a/common_dependencies/exe
+export PATH=$PATH:$code_target_folder/o/common_dependencies/exe:$code_target_folder/a/common_dependencies/exe
 
 # Set codebase directory and configure language environment
 case $lang in
 m)
     selection="MATLAB"
     cmd=$code_target_folder/$ver/matlab/DEwrapper
-    chmod +x $cmd
+    chmod +x "$cmd"
     export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64
     export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults
     ;;
-<<<<<<< HEAD
-r)
-    selection="R"
-    export PATH="$HOME/anaconda3/bin:$PATH"
-    cmd="Rscript $code_target_folder/$ver/r/DEwrapper.R"
-=======
 
 r)
     selection="R"
-    cmd="/yes/bin/Rscript $code_target_folder/$ver/r/DEwrapper.R"
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
+    cmd="Rscript $code_target_folder/$ver/r/DEwrapper.R"
     ;;
 
 p)
     selection="Python"
-<<<<<<< HEAD
-    export PATH="$HOME/anaconda3/bin:$PATH"
-=======
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
     cmd="python $code_target_folder/$ver/python/DEwrapper.py"
     ;;
 
 p2)
     selection="Python2"
-<<<<<<< HEAD
-    export PATH="$HOME/anaconda3/bin:$PATH"
-=======
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
     cmd="python2 $code_target_folder/$ver/python/DEwrapper.py"
     ;;
 
 p3)
-<<<<<<< HEAD
     selection="Python3"
-    export PATH="$HOME/anaconda3/bin:$PATH"
-=======
-
-    selection="Python3"
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
     cmd="python3 $code_target_folder/$ver/python/DEwrapper.py"
     ;;
 
@@ -226,16 +175,11 @@ mi)
     passwd --stdin plants
     service ssh restart
 
-    cd /usr/local/mcr/v93/sys/os/glnxa64
+    cd /usr/local/mcr/v93/sys/os/glnxa64 || exit
     mv libstdc++.so.6 libstdc++.so.6.bak
-    cd $cmd
-    chmod +x $cmd
-
-<<<<<<< HEAD
-    export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/    mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
-=======
+    cd "$cmd" || exit
+    chmod +x "$cmd"
     export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
     export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults
     ;;
 
@@ -252,7 +196,7 @@ b)
 esac
 
 printf "**************************************************************\n"
-printf "* ${selection} selected \n"
+printf "* %s selected \n" "$selection"
 printf "**************************************************************\n"
 
 # Reconfigure arguments and Run commands
@@ -261,34 +205,23 @@ echo -e "*   Pre-arguments| ${@} "
 
 # Remove codebase from $1 in arglist
 # Setting application
-set -- "" $app "${@:3}"
+set -- "" "$app" "${@:3}"
 
 printf "*------------------------------------------------------------*\n"
-echo -e "*  Post-arguments| ${@} "
+echo -e "*  Post-arguments| $@ \n"
 printf "**************************************************************\n"
 
-echo -e "* Running Command| ${cmd} ${@} "
+echo -e "* Running Command| $cmd $@ \n"
 printf "**************************************************************\n"
 
 # Set working directory to data storage location and run app
 startC=$SECONDS
-<<<<<<< HEAD
-cd userdata/dataout/
-=======
-#cd /loadingdock/userdata/dataout/
-cd $PWD/loadingdock/userdata/dataout/
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
+cd "$PWD"/loadingdock/userdata/dataout/ || exit
 $cmd $@
 runC=$(($SECONDS-$startC))
 
 printf "**************************************************************\n"
-echo -e "* Ending Command| ${cmd} ${@} "
+echo -e "* Ending Command| $cmd $@ \n "
 printf "*------------------------------------------------------------*\n"
-printf "* ${runC} seconds to run command \n"
+printf "* %s seconds to run command \n" "$runC"
 printf "**************************************************************\n"
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3

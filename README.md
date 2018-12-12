@@ -1,54 +1,52 @@
 # phytoshell
-Phytoshell Docker image configuration for setting up computing environments for CyVerse and Open Science Grid
-**[TODO: purpose of image, usage, summarize wrapper/runner, re-format with markdown language]**
+Phytoshell Docker image configuration for setting up computing environments for
+CyVerse and Open Science Grid <br />
 
-## Summary
+**[TODO: describe purpose of image, usage, summarize wrapper/runner, re-format
+with markdown language]** <br />
+
+### Summary
 Docker image OS
-  - Ubuntu 18.04 
-  
-Support for 5 languages:
-  - Matlab Compiler Runtime (MCR) R2017b
-  - Python 2.7/3.6.5 (from Anaconda3-5.2.0 [conda 4.5.11])
-  - R 3.2.2
-  - Octave 4.2.2
-  - Julia 1.0.0
- 
- iRODS Commands
- - iCommands version 4.1.9 <br />
-    - Support for Ubuntu 14+ <br />
-    - Versions 4.1.10-4.1.11 have bugs with mounting via irodsFs (4.2 not tested) <br />
+  - Ubuntu 16.04 <br />
+    - **NOTE**: the _Singularity_ container that this Docker image converts to
+      when running on **OSG** currently supports up to 16.04 <br />
 
-## Installation
-The docker container can be run either by cloning the GitHub repository and building the image 
-directly from the Dockerfile, or by pulling the pre-built image from DockerHub. 
+Support for 5 languages: <br />
+  - Matlab Compiler Runtime (MCR) R2017b <br />
+  - Python 2.7/3.6.5 (from Anaconda3-5.2.0 [conda 4.5.11]) <br />
+  - R 3.2.2 <br />
+  - Octave 4.2.2 <br />
+  - Julia 1.0.0 <br />
 
-#### Downloading un-compiled docker image from GitHub <br />
-Clone the repository and build the Docker image
-```
-git clone https://github.com/jbustamante35/phytoshell
-docker build -t [name-of-image] /path/to/Dockerfile
-```
-User must build the image from the directory containing the Dockerfile and specify a name for 
-the image (e.g. docker build -t spaldingshell /home/username/dockerimages/phytoshell)
+ iRODS Commands <br />
+ - 4.1.9 (supports Ubuntu 14+) <br />
+    - **NOTE**: version 4.1.10 and 4.1.11 have bugs when mounting with _FUSE_
+    - Future versions will be updated to 4.2._X_ <br />
 
-#### Pulling pre-compiled docker image from DockerHub <br />
-Pull repository from DockerHub <br />
-```
-docker pull jbustamante35/phytoshell:phytoshell
-``` 
+### Installation
+A)  Download un-compiled docker image from GitHub
+  1) Clone this repository into desired folder <br />
+    ```
+    git clone https://github.com/jbustamante35/phytoshell
+    ```
+  2) Build docker image <br />
+    ```
+    docker build -t [name-for-image] /path/to/Dockerfile
+    ```
+  3) Run docker image <br />
+    ```
+    docker run -it [name-for-image] [verobisty] [codebase] [application-instructions (see Usage)]
+    ```
 
-## Usage
-### Running docker container from manually-compiled docker image
-
-```
-docker run -it [name-of-image] [verobisty] [codebase] [application_config (see Run Arguments)]
-```
-
-### Running docker container from pre-compiled docker image
-```
-docker pull jbustamante35/phytoshell:phytoshell
-docker run -it phytoshell [verobisty] [codebase] [application_config (see Run Arguments)]
-``` 
+B) Pull pre-compiled docker image from DockerHub
+  1) Pull repository from DockerHub <br />
+    ```
+    docker pull jbustamante35/testphytoshell
+    ```
+  2) Run docker image <br />
+    ```
+    docker run -it [name-for-image] [verobisty] [codebase] [application-instructions (see Usage)]
+    ```
 
 #### Running applications with interactive GUI
 To run this container with applications that require an interactive GUI, change the run command to:
@@ -97,13 +95,14 @@ Running the container requires the following arguments [ explained in detail in 
 **Nathan Miller**, Senior Scientist (<ndmill@gmail.com>) <br />
     University of Wisconsin - Madison <br />
     Department of Botany <br />
-    
-**Julian Bustamante**, Cellular and Molecular Biology Program (<jbustamante@wisc.edu>) <br />
+
+**Julian Bustamante**, Cellular and Molecular Biology Program
+    (<jbustamante@wisc.edu>) <br />
     University of Wisconsin - Madison <br />
     Department of Botany <br />
 
 
-## License
+### License
 MIT license found in [LICENSE](./LICENSE) <br />
 
 

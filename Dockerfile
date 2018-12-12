@@ -55,47 +55,26 @@
 #########################################################################################
 
 FROM ubuntu:16.04
-<<<<<<< HEAD
-RUN apt-get -qq update -y && apt-get -qq upgrade -y ; \
-    apt-get -qq install -y apt-utils ;
-=======
 RUN apt-get -qq update -y && apt-get -qq upgrade -y
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 
 # Update packages and install basic utilities and iRODS dependencies
 RUN \
     apt-get -qq install -y \
-<<<<<<< HEAD
-    bzip2 unzip wget xorg tzdata curl \
-=======
     apt-utils bzip2 unzip wget xorg tzdata curl \
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
     libnspr4 libnss3 libnss3-dev libnss3-tools libjpeg62 libasound2 \
     libfuse2 libssl1.0.0 libgconf-2-4 ;
 
 # Install iRODS commands [ downgrade 4.1.11 to 4.1.09 (10/19/18) ]
 RUN \
-<<<<<<< HEAD
-    #curl ftp://ftp.renci.org/pub/irods/releases/4.1.11/ubuntu14/irods-icommands-4.1.11-ubuntu14-x86_64.deb -    o irods-icommands.deb ; \
-=======
-    #curl ftp://ftp.renci.org/pub/irods/releases/4.1.11/ubuntu14/irods-icommands-4.1.11-ubuntu14-x86_64.deb -o irods-icommands.deb ; \
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
     curl ftp://ftp.renci.org/pub/irods/releases/4.1.9/ubuntu14/irods-icommands-4.1.9-ubuntu14-x86_64.deb -o irods-icommands.deb ; \
     dpkg -i irods-icommands.deb ;
 
 # Install MATLAB 2017b MCR
 RUN \
-<<<<<<< HEAD
     mkdir /mcr-install /cvmfs /de-app-work ; \
     curl ssd.mathworks.com/supportfiles/downloads/R2017b/deployment_files/R2017b/installers/glnxa64/MCR_R2017b_glnxa64_installer.zip -o mcr2017b.zip ; \
     unzip -q mcr2017b.zip -d /mcr-install ; \
     /mcr-install/install -destinationFolder /usr/local/mcr -agreeToLicense yes -mode silent ;
-=======
-	mkdir /mcr-install /cvmfs /de-app-work ; \
-	curl ssd.mathworks.com/supportfiles/downloads/R2017b/deployment_files/R2017b/installers/glnxa64/MCR_R2017b_glnxa64_installer.zip -o mcr2017b.zip ; \
-	unzip -q mcr2017b.zip -d /mcr-install ; \
-	/mcr-install/install -destinationFolder /usr/local/mcr -agreeToLicense yes -mode silent ;
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 
 # Install anaconda to run python2.7/3.7 with dependencies
 RUN \
@@ -106,26 +85,15 @@ RUN \
 # Install R from Anaconda
 ADD installRfromConda.sh /usr/local/bin
 RUN \
-<<<<<<< HEAD
     chmod +x /usr/local/bin/installRfromConda.sh && \
     /usr/local/bin/installRfromConda.sh
-=======
-    chmod +x installRfromConda.sh && \
-    ./installRfromConda.sh ;
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 
 # Install Julia
 RUN \
     curl https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.0-linux-x86_64.tar.gz -o julia.tar.gz ; \
     tar -xzf julia.tar.gz -C /usr/local/ ; \
     ln -s /usr/local/julia-1.0.0/bin/julia /usr/local/bin/julia ;
-<<<<<<< HEAD
 
-# Install Octave
-RUN apt-get -qq install -y octave ;
-
-=======
-#
 # Install Octave
 RUN apt-get -qq install -y octave ;
 
@@ -133,7 +101,6 @@ RUN apt-get -qq install -y octave ;
 # Set display :0 and expose port 22
 # Install X11 utilities
 # Send config files to configure sshd
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 RUN \
     apt-get update -y && apt-get upgrade -y ; \
     apt-get -qq install -y \
@@ -153,19 +120,6 @@ RUN \
     openssh-server ssh openssh-known-hosts \
     locate mlocate less vim ;
 
-<<<<<<< HEAD
-=======
-# Old method
-#RUN \
-#    mkdir -p ~/.vnc ; \
-#    apt-get -qq install -y \
-#    xutils x11-utils x11-common x11-session-utils x11-apps \
-#    libx11-6 dbus-x11 \
-#    openssh-server ssh openssh-known-hosts \
-#    locate mlocate less vim ;
-#ENV DISPLAY :0
-#EXPOSE 22
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 ADD sshd_config.x11     /etc/ssh/
 
 # Delete installation files
@@ -177,16 +131,15 @@ RUN apt-get install -y python-pip python-dev build-essential && \
 
 # Add wrapper, config, and test scripts
 # Reading imaTest charts in MATLAB
-ADD eSFRdefaultColorReference.mat /usr/local/bin/
-ADD eSFRdefaultGrayReference.mat /usr/local/bin/
+ADD eSFRdefaultColorReference.mat /usr/bin/
+ADD eSFRdefaultGrayReference.mat  /usr/bin/
 
 # Debugging scripts to test languages from /bin/bash
 ADD langtest/ /usr/local/langtest/
 
-<<<<<<< HEAD
 # A script to upload files to the data store using iRODS tickets.
 ADD upload-files /usr/local/bin/
-=======
+
 # Parse lines of input_ticket.list for configOSG.sh
 ADD evalTicket.sh /usr/local/bin/
 ADD ticketParser.sh /usr/local/bin/
@@ -194,7 +147,6 @@ ADD ticketParser.sh /usr/local/bin/
 # Extract arguments from config.json file for configOSG.sh
 ADD configOSG.sh /usr/local/bin/
 ADD parseConfig.sh /usr/local/bin/
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 
 # Entrypoint for Docker image
 ADD runner /usr/local/bin/
@@ -203,15 +155,6 @@ ADD wrapper /usr/bin/
 RUN chmod +x /usr/local/bin/runner \
     /usr/bin/wrapper
 
-<<<<<<< HEAD
-# Create original and alternate codebases
-RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock
-WORKDIR /loadingdock
-ADD {Plot_2435}{Experiment_80}{Planted_3-4-2018}{SeedSource_16B-7567-7}{SeedYear_2016}{Genotype_CML069}{Treatment_Control}{PictureDay_16}.nef /sampleimages/maizeseedling/
-
-# Add the default iRODS environment file.
-ADD irods_environment.json /root/.irods/irods_environment.json
-=======
 # Make shell scripts executable
 RUN chmod +x \
     /usr/local/bin/evalTicket.sh \
@@ -223,20 +166,20 @@ RUN chmod +x \
 
 # Create original and alternate codebases for configOSG.sh
 #RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock/userdata/datain /loadingdock/userdata/dataout /loadingdock/codebase/o /loadingdock/codebase/a
-RUN mkdir -p /sampleimages/maizeseedling/ /loadingdock
+RUN mkdir -p /sampleimages/stomata/ /sampleimages/maizeseedling/ /loadingdock
 
-#ADD irods_environment.json /loadingdock/
+ADD irods_environment.json /loadingdock/
 RUN chmod -R a+rwX /loadingdock
 
 WORKDIR /loadingdock
 ADD {Plot_2435}{Experiment_80}{Planted_3-4-2018}{SeedSource_16B-7567-7}{SeedYear_2016}{Genotype_CML069}{Treatment_Control}{PictureDay_16}.nef /sampleimages/maizeseedling/
+ADD surghumstomata.nms /sampleimages/stomata
 
 # Additional Debug files
 #ADD irods_environment.json ~/.irods/
 ADD output_ticket.list /loadingdock
 ADD input_ticket.list  /loadingdock
 ADD config.json        /loadingdock
->>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 
 # ENTRYPOINT
 ENTRYPOINT ["/usr/bin/wrapper"]

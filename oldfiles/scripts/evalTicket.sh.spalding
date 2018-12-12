@@ -22,20 +22,22 @@ case $var in
         sourcefldr=dataout
         printf "\n\nUSER: ${username}\n\n"
         printf "Using ticket ${ticket} to ${type} ${source} into ${target}\n"
+        #iput -v -t $ticket -r $source $target
 
         # Upload output structure to CyVerse
         # 1) Create master output directory into user's CyVerse directory
-        # 2) List master directory structure then call xargs to recursively
-        #       iput each file/folder into user's master directory
+        # 2) List master directory structure then call xargs to recursively iput each
+        #       file/folder into user's master directory
         # 3) Grant user permissions to master directory
         # 4) Revoke anonymous user's permissions to directory
         iput -Vrt $ticket $sourcedir/$sourcefldr $target
-        ichmod -r own job "$target/$sourcefldr"
 
         # Replace spaces in path names to '\ ' with sed
-        ls "$sourcedir/$sourcefldr" | sed 's| |\\ |g' | xargs -t -I % \
-            iput -Vr $sourcedir/$sourcefldr/% "$target/$sourcefldr"
+        ls "$sourcedir/$sourcefldr" | sed 's| |\\ |g' | xargs -t -I % iput -Vr $sourcedir/$sourcefldr/% "$target/$sourcefldr"
+
         ichmod -r own $username "$target/$sourcefldr"
+        #hostname=$(jq '.irods_user_name' $target)
+        #hostname=anonymous
         hostname=job
 
         # Don't revoke permissions for user job
