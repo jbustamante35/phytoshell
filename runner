@@ -57,15 +57,22 @@ printf "**************************************************************\n\n\n"
 ofldr="/iplant/home/nmiller/phytoMorph_public_deploy"
 afldr=$1
 
+# Get base names of code bases [ omit iRODS path name ]
+obase=$(echo "$ofldr" | rev | cut -d'/' -f 1 | rev)
+abase=$(echo "$afldr" | rev | cut -d'/' -f 1 | rev)
+
 code_target_folder=$PWD/loadingdock/codebase
 printf "* Downloading original (phytomorph) codebase                 *\n"
 printf "* Source folder: %s\n" "$ofldr "
 startO=$SECONDS
-iget -r $vlvl "$ofldr/matlab" "$code_target_folder/o"
-iget -r $vlvl "$ofldr/r"      "$code_target_folder/o"
-iget -r $vlvl "$ofldr/python" "$code_target_folder/o"
-iget -r $vlvl "$ofldr/octave" "$code_target_folder/o"
-iget -r $vlvl "$ofldr/julia"  "$code_target_folder/o"
+iget -r $vlvl "$ofldr" "$code_target_folder"
+
+# Replace spaces in path name then move contents to code folder
+otmp=$(echo "$code_target_folder/$obase" | sed 's| |\\ |g')
+echo "otmp: $otmp"
+mv $otmp/* $code_target_folder/o
+rmdir "$otmp"
+
 runO=$(($SECONDS-$startO))
 printf "*------------------------------------------------------------*\n"
 printf "* %s seconds to download original codebase\n" "$runO"
@@ -78,11 +85,13 @@ case $afldr in
 na)
     ;;
 *)
-    iget -r $vlvl "$afldr/matlab" "$code_target_folder/a"
-    iget -r $vlvl "$afldr/r"      "$code_target_folder/a"
-    iget -r $vlvl "$afldr/python" "$code_target_folder/a"
-    iget -r $vlvl "$afldr/octave" "$code_target_folder/a"
-    iget -r $vlvl "$afldr/julia"  "$code_target_folder/a"
+    iget -r $vlvl "$afldr" "$code_target_folder"
+
+    # Replace spaces in path name then move contents to code folder
+    atmp=$(echo "$code_target_folder/$abase" | sed 's| |\\ |g')
+    echo "atmp: $atmp"
+    mv $otmp/* $code_target_folder/a
+    rmdir "$atmp"
     ;;
 esac
 runA=$(($SECONDS-$startA))
