@@ -71,10 +71,10 @@ RUN \
 
 # Install MATLAB 2017b MCR
 RUN \
-	mkdir /mcr-install /cvmfs /de-app-work ; \
-	curl ssd.mathworks.com/supportfiles/downloads/R2017b/deployment_files/R2017b/installers/glnxa64/MCR_R2017b_glnxa64_installer.zip -o mcr2017b.zip ; \
-	unzip -q mcr2017b.zip -d /mcr-install ; \
-	/mcr-install/install -destinationFolder /usr/local/mcr -agreeToLicense yes -mode silent ;
+    mkdir /mcr-install /cvmfs /de-app-work ; \
+    curl ssd.mathworks.com/supportfiles/downloads/R2017b/deployment_files/R2017b/installers/glnxa64/MCR_R2017b_glnxa64_installer.zip -o mcr2017b.zip ; \
+    unzip -q mcr2017b.zip -d /mcr-install ; \
+    /mcr-install/install -destinationFolder /usr/local/mcr -agreeToLicense yes -mode silent ;
 
 # Install anaconda to run python2.7/3.7 with dependencies
 RUN \
@@ -83,17 +83,17 @@ RUN \
     bash ~/.bashrc ;
 
 # Install R from Anaconda
-ADD installRfromConda.sh /
+ADD installRfromConda.sh /usr/local/bin
 RUN \
-    chmod +x installRfromConda.sh && \
-    ./installRfromConda.sh ;
+    chmod +x /usr/local/bin/installRfromConda.sh && \
+    /usr/local/bin/installRfromConda.sh
 
 # Install Julia
 RUN \
     curl https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.0-linux-x86_64.tar.gz -o julia.tar.gz ; \
     tar -xzf julia.tar.gz -C /usr/local/ ; \
     ln -s /usr/local/julia-1.0.0/bin/julia /usr/local/bin/julia ;
-#
+
 # Install Octave
 RUN apt-get -qq install -y octave ;
 
@@ -120,20 +120,14 @@ RUN \
     openssh-server ssh openssh-known-hosts \
     locate mlocate less vim ;
 
-# Old method
-#RUN \
-#    mkdir -p ~/.vnc ; \
-#    apt-get -qq install -y \
-#    xutils x11-utils x11-common x11-session-utils x11-apps \
-#    libx11-6 dbus-x11 \
-#    openssh-server ssh openssh-known-hosts \
-#    locate mlocate less vim ;
-#ENV DISPLAY :0
-#EXPOSE 22
 ADD sshd_config.x11     /etc/ssh/
 
 # Delete installation files
 RUN rm -rf irods-icommands.deb mcr2017b.zip /mcr-install anaconda3.sh installRfromConda.sh ;
+
+# Install some Python dependencies
+RUN apt-get install -y python-pip python-dev build-essential && \
+    pip install requests
 
 # Add wrapper, config, and test scripts
 # Reading imaTest charts in MATLAB
@@ -142,6 +136,9 @@ ADD eSFRdefaultGrayReference.mat  /usr/bin/
 
 # Debugging scripts to test languages from /bin/bash
 ADD langtest/ /usr/local/langtest/
+
+# A script to upload files to the data store using iRODS tickets.
+ADD upload-files /usr/local/bin/
 
 # Parse lines of input_ticket.list for configOSG.sh
 ADD evalTicket.sh /usr/local/bin/
@@ -154,6 +151,9 @@ ADD parseConfig.sh /usr/local/bin/
 # Entrypoint for Docker image
 ADD runner /usr/local/bin/
 ADD wrapper /usr/bin/
+# Make scripts executable
+RUN chmod +x /usr/local/bin/runner \
+    /usr/bin/wrapper
 
 # Make shell scripts executable
 RUN chmod +x \

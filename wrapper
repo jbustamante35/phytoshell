@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+#!/usr/bin/env python
+=======
 #!/bin/bash
 #################################################################################
 # This is the wrapper script that serves as the ENTRYPOINT for the phytoshell
@@ -98,4 +101,201 @@ else
         runner "$@"
 
 fi
+>>>>>>> 2874e14fc44e2714b17ba29734dabfe0bdde62e3
 
+from os.path import expanduser
+
+import itertools
+import json
+import os
+import re
+import requests
+import shutil
+import socket
+import subprocess
+import sys
+
+# The name of the configuration file to use when running from OSG.
+config_file = "config.json"
+
+# A class to load configuration settings.
+class Config:
+    def __init__(self, config_json):
+        self.arguments = self.extract_setting(config_json, "arguments", default=[])
+        self.irods_host = self.extract_setting(config_json, "irods_host")
+        self.irods_port = self.extract_setting(config_json, "irods_port", default=1247)
+        self.irods_job_user = self.extract_setting(config_json, "irods_job_user")
+        self.irods_user = self.extract_setting(config_json, "irods_user_name")
+        self.irods_zone = self.extract_setting(config_json, "irods_zone_name", default="")
+        self.input_ticket_list = self.extract_setting(config_json, "input_ticket_list", default="input_ticket.list")
+        self.output_ticket_list = self.extract_setting(config_json, "output_ticket_list", default="output_ticket.list")
+        self.status_update_url = self.extract_setting(config_json, "status_update_url")
+        self.stdout = self.extract_setting(config_json, "stdout", default="out.txt")
+        self.stderr = self.extract_setting(config_json, "stderr", default="err.txt")
+
+    def extract_setting(self, config_json, attribute, default=None):
+        if attribute in config_json:
+            return config_json[attribute]
+        elif default is not None:
+            return default
+        else:
+            print >>sys.stderr, "required configuration setting {0} not provided".format(attribute)
+            sys.exit(1)
+
+# This is a simple context manager class designed to make it easier to read and write iRODS ticket list files.
+class TicketListReader:
+    def __init__(self, path):
+        self.path = path
+
+    def __enter__(self):
+        self.fd = open(self.path, "r")
+        self.r = itertools.imap(lambda l: l.strip().split(",", 1), itertools.ifilter(lambda l: l[0] != '#', self.fd))
+        return self.r
+
+    def __exit__(self, type, value, traceback):
+        self.fd.close()
+
+# This is a simple class used to send job status update messages.
+class JobStatusUpdater:
+    def __init__(self, url):
+        self.url = url
+
+    def print_update(self, status, message):
+        print("{0}: {1}".format(status, message))
+
+    def send_update(self, status, message):
+        self.print_update(status, message)
+        body = {"state": status, "message": message, "hostname": socket.gethostname()}
+        r = requests.post(self.url, json=body)
+        if r.status_code < 200 or r.status_code > 299:
+            print >>sys.stderr, "unable to send job status update: {0} {1}: {2}".format(status, message, r.content)
+
+    def failed(self, message):
+        self.send_update("failed", message)
+
+    def running(self, message):
+        self.send_update("running", message)
+
+    def completed(self, message):
+        self.send_update("completed", message)
+
+# Load the configuration file.
+def load_config():
+    with open(config_file, "r") as f:
+        return Config(json.load(f))
+
+# Returns the lines to include in the banner message.
+def get_banner_lines():
+    return [
+        "Phytomorph Docker Image Shell Version 0.5",
+        "Designed 09/25/2018",
+        "Authors: Nathan Miller, Julian Bustamante",
+        "Working Directory: {0}".format(os.getcwd())
+    ]
+
+# Prints the banner message for the program.
+def print_banner(width):
+    print "{0:*^{width}}".format("", width=width)
+    for line in get_banner_lines():
+        print "*{:^{width}}*".format(line, width=width-2)
+    print "{0:*^{width}}".format("", width=width)
+
+# Ensures that a directory exists.
+def ensuredir(path, mode=0755):
+    if not os.path.exists(path):
+        os.makedirs(path, mode)
+
+# Ensures that multiple directories exist.
+def ensuredirs(paths, mode=0755):
+    for path in paths:
+        ensuredir(path, mode)
+
+# Initialize iRODS.
+def init_irods():
+    ensuredir(expanduser("~/.irods"))
+    shutil.copyfile(config_file, expanduser("~/.irods/irods_environment.json"))
+
+# Download a file or directory from iRODS.
+def download_file(ticket, src):
+    src = re.sub(r'/+$', '', src)
+    rc = subprocess.call(["iget", "-rt", ticket, src, "userdata/datain/"])
+    if rc != 0:
+        raise Exception("could not download {0}".format(src))
+
+# Download a set of files referenced in a ticket list file from iRODS.
+def download_files(ticket_list_path):
+    if os.path.isfile(ticket_list_path):
+        with TicketListReader(ticket_list_path) as tlr:
+            for ticket, src in tlr:
+                download_file(ticket, src)
+
+# Upload a set of files to the directories referenced in a ticket list file to iRODS.
+def upload_files(ticket_list_path, irods_user, owner, files):
+    failed_uploads = []
+    with TicketListReader(ticket_list_path) as tlr:
+        for ticket, dest in tlr:
+            cmd = ["upload-files", "-t", ticket, "-d", dest, "-o", owner, "-u", irods_user, "-s"] + files
+            rc = subprocess.call(cmd)
+            if rc != 0:
+                raise Exception("upload-files exited with status {0}".format(rc))
+    if len(failed_uploads) > 0:
+        raise Exception("the following files could not be uploaded: {0}".format(failed_uploads))
+
+def run_from_osg():
+    # Load the configuration file.
+    cfg = load_config()
+
+    # Create a job status updater and send the initial running update.
+    updater = JobStatusUpdater(cfg.status_update_url)
+    updater.running("configuration successfully loaded")
+
+    # Initialize iRODS.
+    try:
+        updater.running("initializing the iRODS connection")
+        init_irods()
+    except Exception as e:
+        updater.failed("unable to initialize the iRODS connection: {0}".format(e))
+        sys.exit(1)
+
+    # Download the files from iRODS.
+    try:
+        updater.running("downloading the input files")
+        download_files(cfg.input_ticket_list)
+    except Exception as e:
+        updater.failed("unable to download the input files: {0}".format(e))
+        sys.exit(1)
+
+    # Run the job.
+    updater.running("running the analysis")
+    with open(cfg.stdout, "w") as out, open(cfg.stderr, "w") as err:
+        rc = subprocess.call(["runner"] + cfg.arguments, stdout=out, stderr=err)
+    updater.running("runner exited with status {0}".format(rc))
+    job_failed = rc != 0
+
+    # Upload the output files.
+    try:
+        updater.running("uploading the output files")
+        paths = [cfg.stdout, cfg.stderr, "userdata/dataout"]
+        upload_files(cfg.output_ticket_list, cfg.irods_user, cfg.irods_job_user, paths)
+    except Exception as e:
+        updater.running("unable to upload the output files: {0}".format(e))
+        job_failed = True
+
+    # Send the final job status update.
+    if job_failed:
+        updater.failed("job failed; see prior status update messages for details")
+        sys.exit(1)
+    else:
+        updater.completed("job completed successfully")
+
+def run_from_cyverse():
+    rc = subprocess.call(["runner"] + sys.argv[1:])
+    sys.exit(rc)
+
+if __name__ == "__main__":
+    print_banner(80)
+    ensuredirs(["userdata/datain", "userdata/dataout", "codebase/o", "codebase/a"])
+    if len(sys.argv) < 2:
+        run_from_osg()
+    else:
+        run_from_cyverse()

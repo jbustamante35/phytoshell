@@ -17,20 +17,23 @@
 
 # Determine verbosity level and then remove it from the arguments
 # Any non-zero input defaults to strong verbosity
+set -e
 verb=$1
 set -- "${@:2}"
 
 case $verb in
 0)
-        vlvl=" "
-        ;;
+    vlvl=" "
+    ;;
 
 1)
-        vlvl="-V"
-        ;;
+    vlvl="-V"
+    ;;
+
 *)
-        vlvl="-V"
-        ;;
+    vlvl="-V"
+    ;;
+
 esac
 
 # Check input arguments
@@ -65,6 +68,7 @@ code_target_folder=$PWD/loadingdock/codebase
 printf "* Downloading original (phytomorph) codebase                 *\n"
 printf "* Source folder: %s\n" "$ofldr "
 startO=$SECONDS
+
 iget -r $vlvl "$ofldr" "$code_target_folder"
 
 # Replace spaces in path name then move contents to code folder
@@ -81,6 +85,7 @@ printf "**************************************************************\n"
 printf "* Downloading alternate codebase                             *\n"
 printf "* Source folder: %s \n" "$afldr"
 startA=$SECONDS
+
 case $afldr in
 na)
     ;;
@@ -94,6 +99,7 @@ na)
     rmdir "$atmp"
     ;;
 esac
+
 runA=$(($SECONDS-$startA))
 printf "*------------------------------------------------------------*\n"
 printf "* %s seconds to download alternate codebase\n" "$runA"
@@ -132,7 +138,6 @@ p2)
     ;;
 
 p3)
-
     selection="Python3"
     cmd="python3 $code_target_folder/$ver/python/DEwrapper.py"
     ;;
@@ -174,7 +179,6 @@ mi)
     mv libstdc++.so.6 libstdc++.so.6.bak
     cd "$cmd" || exit
     chmod +x "$cmd"
-
     export LD_LIBRARY_PATH=/lib:/lib65:/usr/lib:/usr/local/lib:/usr/local/mcr/v93/runtime/glnxa64:/usr/local/mcr/v93/bin/glnxa64:/usr/local/mcr/v93/sys/os/glnxa64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
     export XAPPLRESDIR=/usr/local/mcr/v93/X11/app-defaults
     ;;
@@ -221,6 +225,3 @@ echo -e "* Ending Command| $cmd $@ \n "
 printf "*------------------------------------------------------------*\n"
 printf "* %s seconds to run command \n" "$runC"
 printf "**************************************************************\n"
-
-
-

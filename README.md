@@ -47,10 +47,51 @@ B) Pull pre-compiled docker image from DockerHub
     ```
     docker run -it [name-for-image] [verobisty] [codebase] [application-instructions (see Usage)]
     ```
-### Usage
 
+#### Running applications with interactive GUI
+To run this container with applications that require an interactive GUI, change the run command to:
+```
+docker run --privileged -p 22:22 -it [name-of-image] [verobisty] [codebase] [application_config (see Usage)]
+``` 
+Then in a separate terminal, ssh into the running container with X11 port forwarding 
+```
+ssh -CX root@localhost
+```
 
-### Authors
+---                                                                                                 
+**Alternatively, create a profile in ~/.ssh/config with the following settings**
+                                                                                                    
+**Host dok** <br />
+&nbsp;&nbsp;&nbsp;&nbsp;  HostName localhost <br />
+&nbsp;&nbsp;&nbsp;&nbsp;  Port 22 <br />
+&nbsp;&nbsp;&nbsp;&nbsp;  User root <br />
+&nbsp;&nbsp;&nbsp;&nbsp;  ForwardX11 yes <br />
+&nbsp;&nbsp;&nbsp;&nbsp;  SendEnv LANG LC_\*  <br />
+&nbsp;&nbsp;&nbsp;&nbsp;  HashKnownHosts yes <br />
+&nbsp;&nbsp;&nbsp;&nbsp;  GSSAPIAuthentication yes <br />
+                                                                                                    
+---     
+Then ssh into the running container
+```
+ssh -C dok
+```
+
+### Run Arguments
+Running the container requires the following arguments [ explained in detail in runner script ]
+**name-of-image**: name of docker image  <br />
+    - if running a manually-built docker container, this is your docker image name. <br />
+    - if running the pre-compiled docker image, the default image is phytoshell. <br />
+
+**verbosity**: iRODS download verbosity level  <br />
+    for downloading from iRODS [ 0 for none ; 1 for verbose ] <br />
+
+**codebase**: <br /> 
+    iRODS  <br />
+
+**application_config**: <br />
+    asdf  <br />
+
+## Authors
 **Nathan Miller**, Senior Scientist (<ndmill@gmail.com>) <br />
     University of Wisconsin - Madison <br />
     Department of Botany <br />
