@@ -99,9 +99,14 @@ printf "*------------------------------------------------------------*\n"
 printf "* %s seconds to download alternate codebase\n" "$runA"
 printf "**************************************************************\n\n\n"
 
+# Make all executables from dependencies folders and set new PATH
+mkdir -p $code_target_folder/o/common_dependencies/exe \
+         $code_target_folder/a/common_dependencies/exe
+chmod -R +x $code_target_folder/o/common_dependencies/exe \
+            $code_target_folder/a/common_dependencies/exe
+export PATH=$PATH:$code_target_folder/o/common_dependencies/exe:$code_target_folder/a/common_dependencies/exe
 
 # Set codebase directory and configure language environment
-
 case $lang in
 m)
     selection="MATLAB"

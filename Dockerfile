@@ -66,7 +66,6 @@ RUN \
 
 # Install iRODS commands [ downgrade 4.1.11 to 4.1.09 (10/19/18) ]
 RUN \
-    #curl ftp://ftp.renci.org/pub/irods/releases/4.1.11/ubuntu14/irods-icommands-4.1.11-ubuntu14-x86_64.deb -o irods-icommands.deb ; \
     curl ftp://ftp.renci.org/pub/irods/releases/4.1.9/ubuntu14/irods-icommands-4.1.9-ubuntu14-x86_64.deb -o irods-icommands.deb ; \
     dpkg -i irods-icommands.deb ;
 
@@ -138,8 +137,8 @@ RUN rm -rf irods-icommands.deb mcr2017b.zip /mcr-install anaconda3.sh installRfr
 
 # Add wrapper, config, and test scripts
 # Reading imaTest charts in MATLAB
-ADD eSFRdefaultColorReference.mat /usr/local/bin/
-ADD eSFRdefaultGrayReference.mat /usr/local/bin/
+ADD eSFRdefaultColorReference.mat /usr/bin/
+ADD eSFRdefaultGrayReference.mat  /usr/bin/
 
 # Debugging scripts to test languages from /bin/bash
 ADD langtest/ /usr/local/langtest/
