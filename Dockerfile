@@ -95,14 +95,15 @@ RUN \
     ln -s /usr/local/julia-1.0.0/bin/julia /usr/local/bin/julia ;
 #
 # Install Octave
-RUN apt-get -qq install -y octave ;
+RUN \
+    apt-get -qq update -y && apt-get -qq upgrade -y ; \
+    apt-get -y install octave ;
 
 # Set-up for X11 port-forwarding [ and a few simple tools for debug mode ]
 # Set display :0 and expose port 22
 # Install X11 utilities
 # Send config files to configure sshd
 RUN \
-    apt-get update -y && apt-get upgrade -y ; \
     apt-get -qq install -y \
     python-pip python3-pip \
     xvfb python3-pytest x11vnc git firefox ; \
@@ -144,15 +145,15 @@ ADD eSFRdefaultGrayReference.mat  /usr/bin/
 ADD langtest/ /usr/local/langtest/
 
 # Parse lines of input_ticket.list for configOSG.sh
-ADD evalTicket.sh /usr/local/bin/
+ADD evalTicket.sh   /usr/local/bin/
 ADD ticketParser.sh /usr/local/bin/
 
 # Extract arguments from config.json file for configOSG.sh
-ADD configOSG.sh /usr/local/bin/
+ADD configOSG.sh   /usr/local/bin/
 ADD parseConfig.sh /usr/local/bin/
 
 # Entrypoint for Docker image
-ADD runner /usr/local/bin/
+ADD runner  /usr/local/bin/
 ADD wrapper /usr/bin/
 
 # Make shell scripts executable
