@@ -1,5 +1,5 @@
 #!/bin/bash
-#################################################################################
+###############################################################################
 # This is the runner script called by the wrapper script that parses through
 # command line arguments to determine how to run the application. The wrapper
 # script determines whether to run the application through CyVerse or the
@@ -144,7 +144,8 @@ p3)
 
 o)
     selection="Octave"
-    cmd="octave -W $code_target_folder/$ver/octave/DEwrapper.m"
+    #cmd="octave -W $code_target_folder/$ver/octave/DEwrapper.m"
+    cmd="octave --eval $code_target_folder/$ver/octave/DEwrapper.m --no-gui"
 
     #fin=$code_target_folder/$ver/octave/DEwrapper.m
     #run="octave --eval \"run('$fin')\""

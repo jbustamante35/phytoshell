@@ -96,8 +96,13 @@ RUN \
 
 # Install Octave
 RUN \
+<<<<<<< HEAD
+    apt-get -qq update -y && apt-get -qq upgrade -y ; \
+    apt-get -y install octave ;
+=======
     apt-get update -y && apt-get upgrade -y ; \
     apt-get -qq install -y octave ;
+>>>>>>> 38b9c37c7fd35867e36a27cd904c2cf5178bfe46
 
 # Set-up for X11 port-forwarding [ and a few simple tools for debug mode ]
 # Set display :0 and expose port 22
@@ -142,15 +147,15 @@ ADD langtest/ /usr/local/langtest/
 ADD upload-files /usr/local/bin/
 
 # Parse lines of input_ticket.list for configOSG.sh
-ADD evalTicket.sh /usr/local/bin/
+ADD evalTicket.sh   /usr/local/bin/
 ADD ticketParser.sh /usr/local/bin/
 
 # Extract arguments from config.json file for configOSG.sh
-ADD configOSG.sh /usr/local/bin/
+ADD configOSG.sh   /usr/local/bin/
 ADD parseConfig.sh /usr/local/bin/
 
 # Entrypoint for Docker image
-ADD runner /usr/local/bin/
+ADD runner  /usr/local/bin/
 ADD wrapper /usr/bin/
 # Make scripts executable
 RUN chmod +x /usr/local/bin/runner \
