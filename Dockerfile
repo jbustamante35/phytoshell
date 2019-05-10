@@ -95,14 +95,15 @@ RUN \
     ln -s /usr/local/julia-1.0.0/bin/julia /usr/local/bin/julia ;
 
 # Install Octave
-RUN apt install octave ;
+RUN \
+    apt-get update -y && apt-get upgrade -y ; \
+    apt-get -qq install -y octave ;
 
 # Set-up for X11 port-forwarding [ and a few simple tools for debug mode ]
 # Set display :0 and expose port 22
 # Install X11 utilities
 # Send config files to configure sshd
 RUN \
-    apt-get update -y && apt-get upgrade -y ; \
     apt-get -qq install -y \
     python-pip python3-pip \
     xvfb python3-pytest x11vnc git firefox ; \
