@@ -96,13 +96,8 @@ RUN \
 
 # Install Octave
 RUN \
-<<<<<<< HEAD
     apt-get -qq update -y && apt-get -qq upgrade -y ; \
-    apt-get -y install octave ;
-=======
-    apt-get update -y && apt-get upgrade -y ; \
     apt-get -qq install -y octave ;
->>>>>>> 38b9c37c7fd35867e36a27cd904c2cf5178bfe46
 
 # Set-up for X11 port-forwarding [ and a few simple tools for debug mode ]
 # Set display :0 and expose port 22
