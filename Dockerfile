@@ -64,39 +64,38 @@ RUN \
     libnspr4 libnss3 libnss3-dev libnss3-tools libjpeg62 libasound2 \
     libfuse2 libssl1.0.0 libgconf-2-4 ;
 
-# Install iRODS commands [ downgrade 4.1.11 to 4.1.09 (10/19/18) ]
+# Install iRODS commands [ using 4.1.12 and hoping it doesn't have issues from 4.1.11 (03/05/2020) ]
 RUN \
     curl ftp://ftp.renci.org/pub/irods/releases/4.1.9/ubuntu14/irods-icommands-4.1.9-ubuntu14-x86_64.deb -o irods-icommands.deb ; \
+    curl https://files.renci.org/pub/irods/releases/4.1.12/ubuntu14/irods-icommands-4.1.12-ubuntu14-x86_64.deb -o irods-icommands.deb ; \
     dpkg -i irods-icommands.deb ;
 
-# Install MATLAB 2017b MCR
+# Install MATLAB 2019b MCR [ upgraded from 2017b (03/05/2020) ]
 RUN \
     mkdir /mcr-install /cvmfs /de-app-work ; \
-    curl ssd.mathworks.com/supportfiles/downloads/R2017b/deployment_files/R2017b/installers/glnxa64/MCR_R2017b_glnxa64_installer.zip -o mcr2017b.zip ; \
+    curl https://ssd.mathworks.com/supportfiles/downloads/R2019b/Release/4/deployment_files/installer/complete/glnxa64/MATLAB_Runtime_R2019b_Update_4_glnxa64.zip -o mcr2019b.zip ; \
     unzip -q mcr2017b.zip -d /mcr-install ; \
     /mcr-install/install -destinationFolder /usr/local/mcr -agreeToLicense yes -mode silent ;
 
-# Install anaconda to run python2.7/3.7 with dependencies
-RUN \
-    curl https://repo.anaconda.com/archive/Anaconda3-5.2.0-Linux-x86_64.sh -o anaconda3.sh && \
-    bash anaconda3.sh -b -p $HOME/anaconda3 && \
-    bash ~/.bashrc ;
+# Install anaconda to run python2.7/3.7 with dependencies [ just keep default Python 2-3 (03/05/2020) ]
+#RUN \
+#    curl https://repo.anaconda.com/archive/Anaconda3-5.2.0-Linux-x86_64.sh -o anaconda3.sh && \
+#    bash anaconda3.sh -b -p $HOME/anaconda3 && \
+#    bash ~/.bashrc ;
 
-# Install R from Anaconda
-ADD installRfromConda.sh /usr/local/bin
+# Install Julia [ 1.3.1 (03/05/2020) ]
 RUN \
-    chmod +x /usr/local/bin/installRfromConda.sh && \
-    /usr/local/bin/installRfromConda.sh
-
-# Install Julia
-RUN \
-    curl https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.0-linux-x86_64.tar.gz -o julia.tar.gz ; \
+    curl https://julialang-s3.julialang.org/bin/linux/x64/1.3/julia-1.3.1-linux-x86_64.tar.gz -o julia.tar.gz ; \
     tar -xzf julia.tar.gz -C /usr/local/ ; \
-    ln -s /usr/local/julia-1.0.0/bin/julia /usr/local/bin/julia ;
+    ln -s /usr/local/julia-1.3.1/bin/julia /usr/local/bin/julia ;
+
+# Install R [ not from Anaconda (03/05/2020 ]
+RUN \
+    apt-get -qq update -y && apt-get -qq upgrade -y ; \
+    apt-get -qq install -y rbase ;
 
 # Install Octave
 RUN \
-    apt-get -qq update -y && apt-get -qq upgrade -y ; \
     apt-get -qq install -y octave ;
 
 # Set-up for X11 port-forwarding [ and a few simple tools for debug mode ]
@@ -124,7 +123,7 @@ RUN \
 ADD sshd_config.x11     /etc/ssh/
 
 # Delete installation files
-RUN rm -rf irods-icommands.deb mcr2017b.zip /mcr-install anaconda3.sh installRfromConda.sh ;
+RUN rm -rf irods-icommands.deb mcr2019b.zip /mcr-install installRfromConda.sh ;
 
 # Install some Python dependencies
 RUN apt-get install -y python-pip python-dev build-essential && \
